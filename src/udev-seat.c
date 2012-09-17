@@ -40,6 +40,14 @@ udev_seat_create(struct weston_compositor *c, const char *seat_name);
 static void
 udev_seat_destroy(struct udev_seat *seat);
 
+static void
+device_parse_quirks(struct evdev_device *evdev_device,
+		    struct udev_device *udev_device)
+{
+	if (udev_device_get_property_value(udev_device, "WL_QUIRK_SWAP_AXES"))
+		evdev_device->quirks |= EVDEV_QUIRK_SWAP_AXES;
+}
+
 static int
 device_added(struct udev_device *udev_device, struct udev_input *input)
 {
@@ -113,6 +121,7 @@ device_added(struct udev_device *udev_device, struct udev_input *input)
 			    device->abs.calibration[5]);
 	}
 
+	device_parse_quirks(device, udev_device);
 	wl_list_insert(seat->devices_list.prev, &device->link);
 
 	if (seat->base.output && seat->base.pointer)
