@@ -19,7 +19,7 @@ BuildRequires:  libtool >= 2.2
 BuildRequires:  libvpx-devel
 BuildRequires:  pam-devel
 BuildRequires:  pkgconfig
-BuildRequires:  rsvg-view
+#BuildRequires:  rsvg-view
 BuildRequires:  xz
 BuildRequires:  pkgconfig(cairo)
 BuildRequires:  pkgconfig(cairo-egl) >= 1.11.3
@@ -36,7 +36,7 @@ BuildRequires:  pkgconfig(libsystemd-login)
 BuildRequires:  pkgconfig(libudev) >= 136
 BuildRequires:  pkgconfig(mtdev) >= 1.1.0
 BuildRequires:  pkgconfig(pixman-1)
-#BuildRequires:  pkgconfig(poppler-glib)
+BuildRequires:  pkgconfig(poppler-glib)
 BuildRequires:  pkgconfig(wayland-client)
 BuildRequires:  pkgconfig(wayland-egl)
 BuildRequires:  pkgconfig(wayland-server)
