@@ -69,6 +69,9 @@ make %{?_smp_mflags};
 %install
 %make_install
 
+%post
+getent group weston-launch >/dev/null || %{_sbindir}/groupadd -o -r weston-launch
+
 %files
 %defattr(-,root,root)
 %_bindir/wcap-*
