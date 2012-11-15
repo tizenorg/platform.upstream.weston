@@ -85,7 +85,10 @@ getent group weston-launch >/dev/null || %{_sbindir}/groupadd -o -r weston-launc
 %files
 %defattr(-,root,root)
 %_bindir/wcap-*
-%_bindir/weston*
+%_bindir/weston
+%_bindir/weston-info
+%attr(4755,root,root) %{_bindir}/weston-launch
+%{_bindir}/weston-terminal
 %_libexecdir/weston-*
 %_libdir/weston
 %_datadir/weston
