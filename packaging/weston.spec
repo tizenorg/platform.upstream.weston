@@ -1,3 +1,5 @@
+%define _unitdir_user /usr/lib/systemd/user
+
 Name:           weston
 %define lname	libweston
 Version:        1.0.0
@@ -9,7 +11,9 @@ Url:            http://weston.freedesktop.org/
 
 #Git-Clone:	git://anongit.freedesktop.org/wayland/weston
 #Git-Web:	http://cgit.freedesktop.org/wayland/weston/
-Source:         %name-%version.tar.xz
+Source0:         %name-%version.tar.xz
+Source1:        weston.service
+Source2:        weston.target
 BuildRoot:      %{_tmppath}/%{name}-%{version}-build
 BuildRequires:	autoconf >= 2.64, automake >= 1.11
 BuildRequires:  gcc-c++
@@ -45,6 +49,7 @@ BuildRequires:	pkgconfig(xcb)
 BuildRequires:	pkgconfig(xcb-xfixes)
 BuildRequires:	pkgconfig(xcursor)
 BuildRequires:  pkgconfig(glu) >= 9.0.0
+Requires(pre):  /usr/sbin/groupadd
 
 %description
 Weston is the reference implementation of a Wayland compositor, and a
@@ -69,7 +74,12 @@ make %{?_smp_mflags};
 %install
 %make_install
 
-%post
+install -d %{buildroot}/%{_unitdir_user}/weston.target.wants
+install -m 644 %{SOURCE1} %{buildroot}%{_unitdir_user}/weston.service
+install -m 644 %{SOURCE2} %{buildroot}%{_unitdir_user}/weston.target
+ln -sf ../weston.service %{buildroot}/%{_unitdir_user}/weston.target.wants/
+
+%pre
 getent group weston-launch >/dev/null || %{_sbindir}/groupadd -o -r weston-launch
 
 %files
@@ -79,6 +89,10 @@ getent group weston-launch >/dev/null || %{_sbindir}/groupadd -o -r weston-launc
 %_libexecdir/weston-*
 %_libdir/weston
 %_datadir/weston
+%{_unitdir_user}/weston.service
+%{_unitdir_user}/weston.target
+%{_unitdir_user}/weston.target.wants
+%{_unitdir_user}/weston.target.wants/weston.service
 /usr/share/man/man1/weston.1.gz
 
 %changelog
