@@ -82,6 +82,8 @@ ln -sf ../weston.service %{buildroot}/%{_unitdir_user}/weston.target.wants/
 %pre
 getent group weston-launch >/dev/null || %{_sbindir}/groupadd -o -r weston-launch
 
+%docs_package 
+
 %files
 %defattr(-,root,root)
 %_bindir/wcap-*
@@ -96,6 +98,5 @@ getent group weston-launch >/dev/null || %{_sbindir}/groupadd -o -r weston-launc
 %{_unitdir_user}/weston.target
 %{_unitdir_user}/weston.target.wants
 %{_unitdir_user}/weston.target.wants/weston.service
-/usr/share/man/man1/weston.1.gz
 
 %changelog
