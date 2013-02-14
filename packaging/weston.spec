@@ -2,11 +2,11 @@
 
 Name:           weston
 %define lname	libweston
-Version:        1.0.3
+Version:        1.0.4
 Release:        0
 Summary:        Wayland Compositor Infrastructure
 License:        MIT
-Group:          Development/Libraries/C and C++
+Group:          Graphics/Wayland Window System
 Url:            http://weston.freedesktop.org/
 
 #Git-Clone:	git://anongit.freedesktop.org/wayland/weston
@@ -14,7 +14,6 @@ Url:            http://weston.freedesktop.org/
 Source0:         %name-%version.tar.xz
 Source1:        weston.service
 Source2:        weston.target
-BuildRoot:      %{_tmppath}/%{name}-%{version}-build
 BuildRequires:	autoconf >= 2.64, automake >= 1.11
 BuildRequires:  gcc-c++
 BuildRequires:  expat-devel
@@ -23,7 +22,6 @@ BuildRequires:  libtool >= 2.2
 BuildRequires:  libvpx-devel
 BuildRequires:  pam-devel
 BuildRequires:  pkgconfig
-#BuildRequires:  rsvg-view
 BuildRequires:  xz
 BuildRequires:  pkgconfig(cairo)
 BuildRequires:  pkgconfig(cairo-egl) >= 1.11.3
@@ -86,6 +84,7 @@ getent group weston-launch >/dev/null || %{_sbindir}/groupadd -o -r weston-launc
 
 %files
 %defattr(-,root,root)
+%license COPYING
 %_bindir/wcap-*
 %_bindir/weston
 %_bindir/weston-info
