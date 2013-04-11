@@ -1,8 +1,7 @@
 %define _unitdir_user /usr/lib/systemd/user
 
 Name:           weston
-%define lname	libweston
-Version:        1.0.4
+Version:        1.0.6
 Release:        0
 Summary:        Wayland Compositor Infrastructure
 License:        MIT
