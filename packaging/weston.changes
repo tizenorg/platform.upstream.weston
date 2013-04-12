@@ -1,3 +1,6 @@
+* Thu Apr 11 2013 Anas Nashif <anas.nashif@intel.com> submit/trunk/20130411.235236@639026a
+- Also package devel sub-package for header files
+
 * Thu Apr 11 2013 Anas Nashif <anas.nashif@intel.com> 1.0.6@aa865ba
 - Update to 1.0.6
 
