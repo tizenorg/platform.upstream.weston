@@ -60,6 +60,14 @@ desktop shell. Finally, weston also provides integration with the
 Xorg server and can pull X clients into the Wayland desktop and act
 as a X window manager.
 
+
+%package devel 
+Summary: Development files for package %{name}
+Group: Development/Libraries
+%description devel
+This package provides header files and other developer releated files for package %{name}.
+
+
 %prep
 %setup -q
 
@@ -94,7 +102,11 @@ getent group weston-launch >/dev/null || %{_sbindir}/groupadd -o -r weston-launc
 %_datadir/weston
 %{_unitdir_user}/weston.service
 %{_unitdir_user}/weston.target
-%{_unitdir_user}/weston.target.wants
 %{_unitdir_user}/weston.target.wants/weston.service
+
+
+%files devel
+%_includedir/weston/*.h
+%_libdir/pkgconfig/*.pc
 
 %changelog
