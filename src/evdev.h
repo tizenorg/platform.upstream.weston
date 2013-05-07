@@ -48,6 +48,7 @@ enum evdev_device_capability {
 enum evdev_device_quirks {
 	EVDEV_QUIRK_NONE = 0,
 	EVDEV_QUIRK_SWAP_AXES = (1 << 0),
+	EVDEV_QUIRK_SWAP_XAXIS = (2 << 0),
 };
 
 struct evdev_device {
