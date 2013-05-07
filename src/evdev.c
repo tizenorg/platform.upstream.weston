@@ -131,41 +131,42 @@ evdev_process_absolute_motion(struct evdev_device *device,
 	const int screen_width = device->output->current->width;
 	const int screen_height = device->output->current->height;
 
-	if (device->quirks & EVDEV_QUIRK_SWAP_AXES) {
-		switch (e->code) {
-		case ABS_X:
+	switch (e->code) {
+	case ABS_X:
+		if (device->quirks & EVDEV_QUIRK_SWAP_AXES) {
 			device->abs.y =
 				(e->value - device->abs.min_y) * screen_height /
 				(device->abs.max_y - device->abs.min_y) +
 				device->output->y;
-			device->pending_events |= EVDEV_ABSOLUTE_MOTION;
-			break;
-		case ABS_Y:
+		} else if (device->quirks & EVDEV_QUIRK_SWAP_XAXIS) { 
+			device->abs.x =
+				(device->abs.max_x - (e->value - device->abs.min_x)) * screen_width /
+				(device->abs.max_x - device->abs.min_x) +
+				device->output->x;
+		} else {
+			/* Normally Process Y */
 			device->abs.x =
 				(e->value - device->abs.min_x) * screen_width /
 				(device->abs.max_x - device->abs.min_x) +
 				device->output->x;
-			device->pending_events |= EVDEV_ABSOLUTE_MOTION;
-			break;
 		}
-
-	} else {
-		switch (e->code) {
-		case ABS_X:
+	        device->pending_events |= EVDEV_ABSOLUTE_MOTION;
+		break;
+	case ABS_Y:
+		if (device->quirks & EVDEV_QUIRK_SWAP_AXES) {
 			device->abs.x =
 				(e->value - device->abs.min_x) * screen_width /
 				(device->abs.max_x - device->abs.min_x) +
 				device->output->x;
-			device->pending_events |= EVDEV_ABSOLUTE_MOTION;
-			break;
-		case ABS_Y:
+		} else {
+			/* Normally Process Y */
 			device->abs.y =
 				(e->value - device->abs.min_y) * screen_height /
 				(device->abs.max_y - device->abs.min_y) +
 				device->output->y;
-			device->pending_events |= EVDEV_ABSOLUTE_MOTION;
-			break;
 		}
+	        device->pending_events |= EVDEV_ABSOLUTE_MOTION;
+		break;
 	}
 }
 

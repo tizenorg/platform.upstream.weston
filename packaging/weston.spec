@@ -13,6 +13,7 @@ Url:            http://weston.freedesktop.org/
 Source0:         %name-%version.tar.xz
 Source1:        weston.service
 Source2:        weston.target
+Source3:        99-chelong-quirk.rules
 BuildRequires:	autoconf >= 2.64, automake >= 1.11
 BuildRequires:  gcc-c++
 BuildRequires:  expat-devel
@@ -83,6 +84,9 @@ install -m 644 %{SOURCE1} %{buildroot}%{_unitdir_user}/weston.service
 install -m 644 %{SOURCE2} %{buildroot}%{_unitdir_user}/weston.target
 ln -sf ../weston.service %{buildroot}/%{_unitdir_user}/weston.target.wants/
 
+mkdir -p $RPM_BUILD_ROOT/%{_sysconfdir}/udev/rules.d/
+install -m 0644 %{SOURCE3} $RPM_BUILD_ROOT/%{_sysconfdir}/udev/rules.d/
+
 %pre
 getent group weston-launch >/dev/null || %{_sbindir}/groupadd -o -r weston-launch
 
@@ -102,7 +106,7 @@ getent group weston-launch >/dev/null || %{_sbindir}/groupadd -o -r weston-launc
 %{_unitdir_user}/weston.service
 %{_unitdir_user}/weston.target
 %{_unitdir_user}/weston.target.wants/weston.service
-
+%{_sysconfdir}/udev/rules.d/99-chelong-quirk.rules
 
 %files devel
 %_includedir/weston/*.h
