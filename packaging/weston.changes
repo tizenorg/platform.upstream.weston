@@ -1,3 +1,6 @@
+* Wed Jun 05 2013 Rusty Lynch <rusty.lynch@intel.com> 1.1.0@9d774db
+- Update to 1.1.0
+
 * Thu Apr 11 2013 Anas Nashif <anas.nashif@intel.com> submit/trunk/20130411.235236@639026a
 - Also package devel sub-package for header files
 
