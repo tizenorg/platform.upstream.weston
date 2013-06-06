@@ -1,7 +1,7 @@
 %define _unitdir_user /usr/lib/systemd/user
 
 Name:           weston
-Version:        1.0.6
+Version:        1.1.0
 Release:        0
 Summary:        Wayland Compositor Infrastructure
 License:        MIT
@@ -72,8 +72,7 @@ This package provides header files and other developer releated files for packag
 %setup -q
 
 %build
-%autogen
-%configure --disable-static --disable-setuid-install  --enable-simple-clients --enable-clients
+%autogen --disable-static --disable-setuid-install  --enable-simple-clients --enable-clients --disable-libunwind
 make %{?_smp_mflags};
 
 %install
