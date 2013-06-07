@@ -46,7 +46,7 @@ BuildRequires:	pkgconfig(xcb)
 BuildRequires:	pkgconfig(xcb-xfixes)
 BuildRequires:	pkgconfig(xcursor)
 BuildRequires:  pkgconfig(glu) >= 9.0.0
-Requires(pre):  /usr/sbin/groupadd
+Requires:  /usr/sbin/groupadd
 
 %description
 Weston is the reference implementation of a Wayland compositor, and a
