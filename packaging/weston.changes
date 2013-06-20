@@ -1,3 +1,8 @@
+* Thu Jun 20 2013 Rusty Lynch <rusty.lynch@intel.com> 1.1.1@f7089fb
+- weston-launch: Run weston in the user login shell
+- weston-launch: Don't exit on SIGTERM
+- Update to 1.1.1
+
 * Wed Jun 05 2013 Rusty Lynch <rusty.lynch@intel.com> 1.1.0@9d774db
 - Update to 1.1.0
 
