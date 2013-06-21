@@ -1,0 +1,8 @@
+Change-Id: I029fc0458b9a1515c12c8f2fcd178ae031105b09
+Code-Review+2: Rusty Lynch <rusty.lynch@intel.com>
+Verified+1: Rusty Lynch <rusty.lynch@intel.com>
+Submitted-by: Rusty Lynch <rusty.lynch@intel.com>
+Submitted-at: Fri, 21 Jun 2013 09:53:46 -0700
+Reviewed-on: https://review.tizen.org/gerrit/4174
+Project: platform/upstream/weston
+Branch: refs/heads/tizen
