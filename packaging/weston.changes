@@ -1,3 +1,8 @@
+* Mon Jun 24 2013 Rusty Lynch <rusty.lynch@intel.com> submit/tizen/20130620.235949@109d186
+- Add udev rule to quirk the touchscreen on Chelong
+- compositor-drm: Add quirk loading from udev
+- evdev: Add support for device quirks and implement axes swapping
+
 * Thu Jun 20 2013 Rusty Lynch <rusty.lynch@intel.com> 1.1.1@f7089fb
 - weston-launch: Run weston in the user login shell
 - weston-launch: Don't exit on SIGTERM
