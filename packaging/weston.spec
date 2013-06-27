@@ -14,6 +14,7 @@ Source0:         %name-%version.tar.xz
 Source1:        weston.service
 Source2:        weston.target
 Source3:        99-chelong-quirk.rules
+Source4:        weston.sh
 BuildRequires:	autoconf >= 2.64, automake >= 1.11
 BuildRequires:  gcc-c++
 BuildRequires:  expat-devel
@@ -87,6 +88,9 @@ ln -sf ../weston.service %{buildroot}/%{_unitdir_user}/weston.target.wants/
 mkdir -p $RPM_BUILD_ROOT/%{_sysconfdir}/udev/rules.d/
 install -m 0644 %{SOURCE3} $RPM_BUILD_ROOT/%{_sysconfdir}/udev/rules.d/
 
+mkdir -p $RPM_BUILD_ROOT/%{_sysconfdir}/profile.d/
+install -m 0644 %{SOURCE4} $RPM_BUILD_ROOT/%{_sysconfdir}/profile.d/
+
 %pre
 getent group weston-launch >/dev/null || %{_sbindir}/groupadd -o -r weston-launch
 
@@ -107,6 +111,7 @@ getent group weston-launch >/dev/null || %{_sbindir}/groupadd -o -r weston-launc
 %{_unitdir_user}/weston.target
 %{_unitdir_user}/weston.target.wants/weston.service
 %{_sysconfdir}/udev/rules.d/99-chelong-quirk.rules
+%{_sysconfdir}/profile.d/*
 
 %files devel
 %_includedir/weston/*.h
