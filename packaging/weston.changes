@@ -1,3 +1,6 @@
+* Wed Jun 26 2013 Rusty Lynch <rusty.lynch@intel.com> submit/tizen/20130624.224834@a4a42d8
+- Add tizen environment file
+
 * Mon Jun 24 2013 Rusty Lynch <rusty.lynch@intel.com> submit/tizen/20130620.235949@109d186
 - Add udev rule to quirk the touchscreen on Chelong
 - compositor-drm: Add quirk loading from udev

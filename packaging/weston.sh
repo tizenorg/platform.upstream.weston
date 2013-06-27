@@ -1,0 +1,2 @@
+export ELM_ENGINE=wayland_egl
+export ECORE_EVAS_ENGINE=wayland_egl
