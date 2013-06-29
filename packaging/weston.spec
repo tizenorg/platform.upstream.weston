@@ -15,6 +15,7 @@ Source1:        weston.service
 Source2:        weston.target
 Source3:        99-chelong-quirk.rules
 Source4:        weston.sh
+Source1001: 	weston.manifest
 BuildRequires:	autoconf >= 2.64, automake >= 1.11
 BuildRequires:  gcc-c++
 BuildRequires:  expat-devel
@@ -72,6 +73,7 @@ This package provides header files and other developer releated files for packag
 
 %prep
 %setup -q
+cp %{SOURCE1001} .
 
 %build
 %autogen --disable-static --disable-setuid-install  --enable-simple-clients --enable-clients --disable-libunwind
@@ -97,6 +99,7 @@ getent group weston-launch >/dev/null || %{_sbindir}/groupadd -o -r weston-launc
 %docs_package 
 
 %files
+%manifest %{name}.manifest
 %defattr(-,root,root)
 %license COPYING
 %_bindir/wcap-*
@@ -114,6 +117,7 @@ getent group weston-launch >/dev/null || %{_sbindir}/groupadd -o -r weston-launc
 %{_sysconfdir}/profile.d/*
 
 %files devel
+%manifest %{name}.manifest
 %_includedir/weston/*.h
 %_libdir/pkgconfig/*.pc
 
