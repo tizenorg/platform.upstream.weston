@@ -5,7 +5,7 @@ Version:        1.2.0
 Release:        0
 Summary:        Wayland Compositor Infrastructure
 License:        MIT
-Group:          Graphics/Wayland Window System
+Group:          Graphics & UI Framework/Wayland Window System
 Url:            http://weston.freedesktop.org/
 
 #Git-Clone:	git://anongit.freedesktop.org/wayland/weston
@@ -66,7 +66,7 @@ as a X window manager.
 
 %package devel 
 Summary: Development files for package %{name}
-Group: Development/Libraries
+Group:   Graphics & UI Framework/Development
 %description devel
 This package provides header files and other developer releated files for package %{name}.
 
