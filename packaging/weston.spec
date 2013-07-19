@@ -76,7 +76,7 @@ This package provides header files and other developer releated files for packag
 cp %{SOURCE1001} .
 
 %build
-%autogen --disable-static --disable-setuid-install  --enable-simple-clients --enable-clients --disable-libunwind
+%autogen --disable-static --disable-setuid-install  --enable-simple-clients --enable-clients --disable-libunwind --disable-xkbcommon
 make %{?_smp_mflags};
 
 %install

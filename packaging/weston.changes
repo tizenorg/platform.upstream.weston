@@ -1,3 +1,6 @@
+* Fri Jul 19 2013 Ossama Othman <ossama.othman@intel.com> accepted/tizen/20130719.063456@c6c2029
+- Disable compositor support for libxkbcommon.  Fixes TIVI-1168.
+
 * Tue Jul 16 2013 Ossama Othman <ossama.othman@intel.com> 1.2.0@1427ac4
 - Update to 1.2.0
 
