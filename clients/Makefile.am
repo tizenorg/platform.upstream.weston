@@ -7,7 +7,8 @@ noinst_PROGRAMS =				\
 	$(pango_programs)			\
 	$(poppler_programs)			\
 	$(simple_clients_programs)		\
-	$(simple_egl_clients_programs)
+	$(simple_egl_clients_programs)	\
+	$(egl_lock_surface_programs)
 
 libexec_PROGRAMS =				\
 	$(desktop_shell)			\
@@ -48,6 +49,14 @@ simple_egl_clients_programs =			\
 simple_egl_SOURCES = simple-egl.c
 simple_egl_CPPFLAGS = $(SIMPLE_EGL_CLIENT_CFLAGS)
 simple_egl_LDADD = $(SIMPLE_EGL_CLIENT_LIBS) -lm
+
+egl_lock_surface_programs =			\
+	egl-lock-surface
+
+egl_lock_surface_SOURCES = egl-lock-surface.c
+egl_lock_surface_CPPFLAGS = $(SIMPLE_EGL_CLIENT_CFLAGS)
+egl_lock_surface_LDADD = $(SIMPLE_EGL_CLIENT_LIBS) -lm
+
 endif
 
 if BUILD_CLIENTS
