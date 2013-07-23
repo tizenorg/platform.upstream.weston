@@ -984,8 +984,8 @@ notify_keyboard_focus_out(struct weston_seat *seat)
 	weston_keyboard_end_grab(keyboard);
 }
 
-static void
-touch_set_focus(struct weston_seat *seat, struct weston_surface *surface)
+WL_EXPORT void
+weston_touch_set_focus(struct weston_seat *seat, struct weston_surface *surface)
 {
 	struct wl_resource *resource;
 
@@ -1046,7 +1046,7 @@ notify_touch(struct weston_seat *seat, uint32_t time, int touch_id,
 		 * until all touch points are up again. */
 		if (seat->num_tp == 1) {
 			es = weston_compositor_pick_surface(ec, x, y, &sx, &sy);
-			touch_set_focus(seat, es);
+			weston_touch_set_focus(seat, es);
 			weston_compositor_run_button_binding(ec, seat, time, BTN_TOUCH,
 							     WL_POINTER_BUTTON_STATE_PRESSED);
 		} else if (touch->focus) {
@@ -1085,7 +1085,7 @@ notify_touch(struct weston_seat *seat, uint32_t time, int touch_id,
 
 		grab->interface->up(grab, time, touch_id);
 		if (seat->num_tp == 0)
-			touch_set_focus(seat, NULL);
+			weston_touch_set_focus(seat, NULL);
 		break;
 	}
 }
