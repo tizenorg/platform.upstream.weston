@@ -1,3 +1,6 @@
+* Wed Jul 24 2013 Rusty Lynch <rusty.lynch@intel.com> accepted/tizen/20130719.063456@a7bec7a
+- Add a new clients subpackage
+
 * Tue Jul 16 2013 Ossama Othman <ossama.othman@intel.com> 1.2.0@1427ac4
 - Update to 1.2.0
 

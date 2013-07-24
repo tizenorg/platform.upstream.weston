@@ -70,6 +70,12 @@ Group:   Graphics & UI Framework/Development
 %description devel
 This package provides header files and other developer releated files for package %{name}.
 
+%package clients
+Summary: Sample clients for package %{name}
+Group:   Graphics & UI Framework/Development
+%description clients
+This package provides a set of example wayland clients useful for validating the functionality of wayland
+with very little dependencies on other system components
 
 %prep
 %setup -q
@@ -81,6 +87,22 @@ make %{?_smp_mflags};
 
 %install
 %make_install
+
+# install example clients
+install -m 755 clients/simple-touch %{buildroot}%{_bindir}
+install -m 755 clients/simple-shm %{buildroot}%{_bindir}
+install -m 755 clients/simple-egl %{buildroot}%{_bindir}
+install -m 755 clients/flower %{buildroot}%{_bindir}
+install -m 755 clients/image %{buildroot}%{_bindir}
+install -m 755 clients/cliptest %{buildroot}%{_bindir}
+install -m 755 clients/dnd %{buildroot}%{_bindir}
+install -m 755 clients/smoke %{buildroot}%{_bindir}
+install -m 755 clients/resizor %{buildroot}%{_bindir}
+install -m 755 clients/eventdemo %{buildroot}%{_bindir}
+install -m 755 clients/clickdot %{buildroot}%{_bindir}
+install -m 755 clients/transformed %{buildroot}%{_bindir}
+install -m 755 clients/fullscreen %{buildroot}%{_bindir}
+install -m 755 clients/calibrator %{buildroot}%{_bindir}
 
 install -d %{buildroot}/%{_unitdir_user}/weston.target.wants
 install -m 644 %{SOURCE1} %{buildroot}%{_unitdir_user}/weston.service
@@ -120,5 +142,22 @@ getent group weston-launch >/dev/null || %{_sbindir}/groupadd -o -r weston-launc
 %manifest %{name}.manifest
 %_includedir/weston/*.h
 %_libdir/pkgconfig/*.pc
+
+%files clients
+%manifest %{name}.manifest
+%_bindir/simple-touch
+%_bindir/simple-shm
+%_bindir/simple-egl
+%_bindir/flower
+%_bindir/image
+%_bindir/cliptest
+%_bindir/dnd
+%_bindir/smoke
+%_bindir/resizor
+%_bindir/eventdemo
+%_bindir/clickdot
+%_bindir/transformed
+%_bindir/fullscreen
+%_bindir/calibrator
 
 %changelog
