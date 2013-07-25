@@ -83,6 +83,11 @@ evdev_process_key(struct evdev_device *device, struct input_event *e, int time)
 					 WL_POINTER_BUTTON_STATE_RELEASED);
 		break;
 
+	case BTN_TOUCH:
+		if (e->value == 0)
+			notify_touch(device->seat, time, device->mt.slot, 0, 0,
+				     WL_TOUCH_UP);
+		break;
 	default:
 		notify_key(device->seat,
 			   time, e->code,
@@ -307,9 +312,22 @@ evdev_flush_motion(struct evdev_device *device, uint32_t time)
 	}
 	if (device->pending_events & EVDEV_ABSOLUTE_MOTION) {
 		transform_absolute(device);
-		notify_motion_absolute(master, time,
-			      wl_fixed_from_int(device->abs.x),
-			      wl_fixed_from_int(device->abs.y));
+		if (device->caps & EVDEV_TOUCH) {
+
+		 if (master->num_tp == 0)
+			 notify_touch(master, time, 0,
+					wl_fixed_from_int(device->abs.x),
+					wl_fixed_from_int(device->abs.y),
+					WL_TOUCH_DOWN);
+		  else
+			  notify_touch(master, time, 0,
+					wl_fixed_from_int(device->abs.x),
+					wl_fixed_from_int(device->abs.y),
+					WL_TOUCH_MOTION);
+		} else
+			notify_motion_absolute(master, time,
+					    wl_fixed_from_int(device->abs.x),
+					    wl_fixed_from_int(device->abs.y));
 		device->pending_events &= ~EVDEV_ABSOLUTE_MOTION;
 	}
 }
@@ -506,10 +524,14 @@ evdev_handle_device(struct evdev_device *device)
 				break;
 			}
 		}
+		if (TEST_BIT(key_bits, BTN_TOUCH)) {
+			device->caps |= EVDEV_TOUCH;
+			device->caps &= ~EVDEV_MOTION_ABS;
+		}
+
 	}
-	if (TEST_BIT(ev_bits, EV_LED)) {
+	if (TEST_BIT(ev_bits, EV_LED))
 		device->caps |= EVDEV_KEYBOARD;
-	}
 
 	/* This rule tries to catch accelerometer devices and opt out. We may
 	 * want to adjust the protocol later adding a proper event for dealing
