@@ -146,7 +146,7 @@ evdev_process_absolute_motion(struct evdev_device *device,
 				(e->value - device->abs.min_y) * screen_height /
 				(device->abs.max_y - device->abs.min_y) +
 				device->output->y;
-		} else if (device->quirks & EVDEV_QUIRK_SWAP_XAXIS) { 
+		} else if (device->quirks & EVDEV_QUIRK_SWAP_XAXIS) {
 			device->abs.x =
 				(device->abs.max_x - (e->value - device->abs.min_x)) * screen_width /
 				(device->abs.max_x - device->abs.min_x) +
@@ -567,9 +567,8 @@ evdev_handle_device(struct evdev_device *device)
 		}
 
 	}
-	if (TEST_BIT(ev_bits, EV_LED)) {
+	if (TEST_BIT(ev_bits, EV_LED))
 		device->caps |= EVDEV_KEYBOARD;
-	}
 
 	/* This rule tries to catch accelerometer devices and opt out. We may
 	 * want to adjust the protocol later adding a proper event for dealing
