@@ -27,6 +27,7 @@
 #include <assert.h>
 #include <unistd.h>
 #include <fcntl.h>
+#include <linux/input.h>
 
 #include "../shared/os-compatibility.h"
 #include "compositor.h"
@@ -1046,6 +1047,8 @@ notify_touch(struct weston_seat *seat, uint32_t time, int touch_id,
 		if (seat->num_tp == 1) {
 			es = weston_compositor_pick_surface(ec, x, y, &sx, &sy);
 			touch_set_focus(seat, es);
+			weston_compositor_run_button_binding(ec, seat, time, BTN_TOUCH,
+							     WL_POINTER_BUTTON_STATE_PRESSED);
 		} else if (touch->focus) {
 			es = (struct weston_surface *) touch->focus;
 			weston_surface_from_global_fixed(es, x, y, &sx, &sy);
@@ -1059,6 +1062,14 @@ notify_touch(struct weston_seat *seat, uint32_t time, int touch_id,
 		}
 
 		grab->interface->down(grab, time, touch_id, sx, sy);
+		if (seat->num_tp == 1) {
+			touch->grab_serial =
+				wl_display_get_serial(ec->wl_display);
+			touch->grab_time = time;
+			touch->grab_x = x;
+			touch->grab_y = y;
+		}
+
 		break;
 	case WL_TOUCH_MOTION:
 		es = (struct weston_surface *) touch->focus;

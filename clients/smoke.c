@@ -226,11 +226,9 @@ redraw_handler(struct widget *widget, void *data)
 	wl_surface_commit(window_get_wl_surface(smoke->window));
 }
 
-static int
-smoke_motion_handler(struct widget *widget, struct input *input,
-		     uint32_t time, float x, float y, void *data)
+static void
+smoke_motion_handler(struct smoke *smoke,float x, float y)
 {
-	struct smoke *smoke = data;
 	int i, i0, i1, j, j0, j1, k, d = 5;
 
 	if (x - d < 1)
@@ -258,8 +256,21 @@ smoke_motion_handler(struct widget *widget, struct input *input,
 			smoke->b[0].v[k] += 256 - (random() & 512);
 			smoke->b[0].d[k] += 1;
 		}
+}
 
+static int
+mouse_motion_handler(struct widget *widget, struct input *input,
+		     uint32_t time, float x, float y, void *data)
+{
+	smoke_motion_handler((struct smoke*)data, x, y);
 	return CURSOR_HAND1;
+}
+
+static int
+touch_motion_handler(struct widget *widget, uint32_t time,
+		     int32_t id, wl_fixed_t x_w, wl_fixed_t y_w, void *data)
+{
+	smoke_motion_handler((struct smoke*)data, wl_fixed_to_int(x_w), wl_fixed_to_int(y_w));
 }
 
 static void
@@ -305,7 +316,8 @@ int main(int argc, char *argv[])
 	smoke.b[1].u = calloc(size, sizeof(float));
 	smoke.b[1].v = calloc(size, sizeof(float));
 
-	widget_set_motion_handler(smoke.widget, smoke_motion_handler);
+	widget_set_motion_handler(smoke.widget, mouse_motion_handler);
+	widget_set_touch_motion_handler(smoke.widget, touch_motion_handler);
 	widget_set_resize_handler(smoke.widget, resize_handler);
 	widget_set_redraw_handler(smoke.widget, redraw_handler);
 
