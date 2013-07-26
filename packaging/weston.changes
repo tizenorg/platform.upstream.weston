@@ -1,3 +1,6 @@
+* Fri Jul 26 2013 Rusty Lynch <rusty.lynch@intel.com> submit/tizen/20130725.223721@872ba32
+- Add calibration values for chelong display
+
 * Thu Jul 25 2013 Rusty Lynch <rusty.lynch@intel.com> accepted/tizen/20130719.063456@cd5293b
 - TIVI-1086: Fix handling of touch device
 - Add a new clients subpackage
