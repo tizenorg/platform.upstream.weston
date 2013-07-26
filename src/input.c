@@ -29,6 +29,7 @@
 #include <assert.h>
 #include <unistd.h>
 #include <fcntl.h>
+#include <linux/input.h>
 
 #include "../shared/os-compatibility.h"
 #include "compositor.h"
