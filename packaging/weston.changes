@@ -1,3 +1,6 @@
+* Thu Aug 01 2013 Ossama Othman <ossama.othman@intel.com> submit/tizen/20130726.203035@2a224be
+- Add initial touch support to clients.
+
 * Fri Jul 26 2013 Rusty Lynch <rusty.lynch@intel.com> submit/tizen/20130725.223721@872ba32
 - Add calibration values for chelong display
 
