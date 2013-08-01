@@ -704,7 +704,7 @@ notify_button(struct weston_seat *seat, uint32_t time, int32_t button,
 
 	if (pointer->button_count == 1)
 		pointer->grab_serial =
-			wl_display_get_serial(compositor->wl_display);
+			wl_display_get_serial(compositor->wl_display);	  
 }
 
 WL_EXPORT void

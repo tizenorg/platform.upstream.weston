@@ -322,9 +322,9 @@ panel_launcher_button_handler(struct widget *widget,
 }
 
 static void
-panel_launcher_touch_down_handler(struct widget *widget, uint32_t serial,
-				  uint32_t time, int32_t id, wl_fixed_t x_w,
-				  wl_fixed_t y_w, void *data)
+panel_launcher_touch_down_handler(struct widget *widget, struct input *input,
+				  uint32_t serial, uint32_t time, int32_t id, 
+				  wl_fixed_t x_w, wl_fixed_t y_w, void *data)
 {
 	struct panel_launcher *launcher;
 

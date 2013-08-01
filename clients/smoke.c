@@ -266,9 +266,10 @@ mouse_motion_handler(struct widget *widget, struct input *input,
 	return CURSOR_HAND1;
 }
 
-static int
-touch_motion_handler(struct widget *widget, uint32_t time,
-		     int32_t id, wl_fixed_t x_w, wl_fixed_t y_w, void *data)
+static void
+touch_motion_handler(struct widget *widget, struct input *input,
+		     uint32_t time, int32_t id, wl_fixed_t x_w, 
+		     wl_fixed_t y_w, void *data)
 {
 	smoke_motion_handler((struct smoke*)data, wl_fixed_to_int(x_w), wl_fixed_to_int(y_w));
 }

@@ -163,8 +163,9 @@ button_handler(struct widget *widget,
 }
 
 static void
-touch_handler(struct widget *widget, uint32_t serial, uint32_t time,
-	      int32_t id, wl_fixed_t x_w, wl_fixed_t y_w, void *data)
+touch_handler(struct widget *widget, struct input *input,
+	      uint32_t serial, uint32_t time, int32_t id, 
+	      wl_fixed_t x_w, wl_fixed_t y_w, void *data)
 {
 	struct calibrator *calibrator = data;
 	calibrator->tests[calibrator->current_test].clicked_x = wl_fixed_to_int(x_w);
