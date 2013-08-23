@@ -567,8 +567,10 @@ evdev_handle_device(struct evdev_device *device)
 		}
 
 	}
-	if (TEST_BIT(ev_bits, EV_LED))
+	if (TEST_BIT(ev_bits, EV_LED)) {
 		device->caps |= EVDEV_KEYBOARD;
+	}
+        
 
 	/* This rule tries to catch accelerometer devices and opt out. We may
 	 * want to adjust the protocol later adding a proper event for dealing

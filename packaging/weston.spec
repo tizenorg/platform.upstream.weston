@@ -1,7 +1,7 @@
 %define _unitdir_user /usr/lib/systemd/user
 
 Name:           weston
-Version:        1.2.0
+Version:        1.2.1
 Release:        0
 Summary:        Wayland Compositor Infrastructure
 License:        MIT
@@ -64,7 +64,7 @@ Xorg server and can pull X clients into the Wayland desktop and act
 as a X window manager.
 
 
-%package devel 
+%package devel
 Summary: Development files for package %{name}
 Group:   Graphics & UI Framework/Development
 %description devel
@@ -89,20 +89,20 @@ make %{?_smp_mflags};
 %make_install
 
 # install example clients
-install -m 755 clients/simple-touch %{buildroot}%{_bindir}
-install -m 755 clients/simple-shm %{buildroot}%{_bindir}
-install -m 755 clients/simple-egl %{buildroot}%{_bindir}
-install -m 755 clients/flower %{buildroot}%{_bindir}
-install -m 755 clients/image %{buildroot}%{_bindir}
-install -m 755 clients/cliptest %{buildroot}%{_bindir}
-install -m 755 clients/dnd %{buildroot}%{_bindir}
-install -m 755 clients/smoke %{buildroot}%{_bindir}
-install -m 755 clients/resizor %{buildroot}%{_bindir}
-install -m 755 clients/eventdemo %{buildroot}%{_bindir}
-install -m 755 clients/clickdot %{buildroot}%{_bindir}
-install -m 755 clients/transformed %{buildroot}%{_bindir}
-install -m 755 clients/fullscreen %{buildroot}%{_bindir}
-install -m 755 clients/calibrator %{buildroot}%{_bindir}
+install -m 755 clients/weston-simple-touch %{buildroot}%{_bindir}
+install -m 755 clients/weston-simple-shm %{buildroot}%{_bindir}
+install -m 755 clients/weston-simple-egl %{buildroot}%{_bindir}
+install -m 755 clients/weston-flower %{buildroot}%{_bindir}
+install -m 755 clients/weston-image %{buildroot}%{_bindir}
+install -m 755 clients/weston-cliptest %{buildroot}%{_bindir}
+install -m 755 clients/weston-dnd %{buildroot}%{_bindir}
+install -m 755 clients/weston-smoke %{buildroot}%{_bindir}
+install -m 755 clients/weston-resizor %{buildroot}%{_bindir}
+install -m 755 clients/weston-eventdemo %{buildroot}%{_bindir}
+install -m 755 clients/weston-clickdot %{buildroot}%{_bindir}
+install -m 755 clients/weston-transformed %{buildroot}%{_bindir}
+install -m 755 clients/weston-fullscreen %{buildroot}%{_bindir}
+install -m 755 clients/weston-calibrator %{buildroot}%{_bindir}
 
 install -d %{buildroot}/%{_unitdir_user}/weston.target.wants
 install -m 644 %{SOURCE1} %{buildroot}%{_unitdir_user}/weston.service
@@ -118,7 +118,7 @@ install -m 0644 %{SOURCE4} $RPM_BUILD_ROOT/%{_sysconfdir}/profile.d/
 %pre
 getent group weston-launch >/dev/null || %{_sbindir}/groupadd -o -r weston-launch
 
-%docs_package 
+%docs_package
 
 %files
 %manifest %{name}.manifest
@@ -145,19 +145,19 @@ getent group weston-launch >/dev/null || %{_sbindir}/groupadd -o -r weston-launc
 
 %files clients
 %manifest %{name}.manifest
-%_bindir/simple-touch
-%_bindir/simple-shm
-%_bindir/simple-egl
-%_bindir/flower
-%_bindir/image
-%_bindir/cliptest
-%_bindir/dnd
-%_bindir/smoke
-%_bindir/resizor
-%_bindir/eventdemo
-%_bindir/clickdot
-%_bindir/transformed
-%_bindir/fullscreen
-%_bindir/calibrator
+%_bindir/weston-simple-touch
+%_bindir/weston-simple-shm
+%_bindir/weston-simple-egl
+%_bindir/weston-flower
+%_bindir/weston-image
+%_bindir/weston-cliptest
+%_bindir/weston-dnd
+%_bindir/weston-smoke
+%_bindir/weston-resizor
+%_bindir/weston-eventdemo
+%_bindir/weston-clickdot
+%_bindir/weston-transformed
+%_bindir/weston-fullscreen
+%_bindir/weston-calibrator
 
 %changelog
