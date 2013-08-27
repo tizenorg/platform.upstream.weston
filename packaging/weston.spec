@@ -15,6 +15,10 @@ Source1:        weston.service
 Source2:        weston.target
 Source3:        99-chelong-quirk.rules
 Source4:        weston.sh
+Source5:        terminal.xml
+Source6:        browser.xml
+Source7:        browser.png
+Source8:        browser
 Source1001: 	weston.manifest
 BuildRequires:	autoconf >= 2.64, automake >= 1.11
 BuildRequires:  gcc-c++
@@ -50,6 +54,7 @@ BuildRequires:	pkgconfig(xcb-xfixes)
 BuildRequires:	pkgconfig(xcursor)
 BuildRequires:  pkgconfig(glu) >= 9.0.0
 Requires(pre):  /usr/sbin/groupadd
+Requires(post): /usr/bin/pkg_initdb
 
 %description
 Weston is the reference implementation of a Wayland compositor, and a
@@ -88,6 +93,17 @@ make %{?_smp_mflags};
 %install
 %make_install
 
+# install tizen package metadata for weston-terminal
+mkdir -p %{buildroot}%{_datadir}/packages/
+mkdir -p %{buildroot}%{_datadir}/icons/default/small
+install -m 0644 %{SOURCE5} %{buildroot}%{_datadir}/packages/terminal.xml
+cp %{buildroot}%{_datadir}/weston/terminal.png %{buildroot}%{_datadir}/icons/default/small/
+
+# install browser package metadata for MiniBrowser
+install -m 0644 %{SOURCE6} %{buildroot}%{_datadir}/packages/browser.xml
+cp %{SOURCE7} %{buildroot}%{_datadir}/icons/default/small/
+install -m 755 %{SOURCE8} %{buildroot}%{_bindir}/browser
+
 # install example clients
 install -m 755 clients/weston-simple-touch %{buildroot}%{_bindir}
 install -m 755 clients/weston-simple-shm %{buildroot}%{_bindir}
@@ -118,6 +134,9 @@ install -m 0644 %{SOURCE4} $RPM_BUILD_ROOT/%{_sysconfdir}/profile.d/
 %pre
 getent group weston-launch >/dev/null || %{_sbindir}/groupadd -o -r weston-launch
 
+%post
+/usr/bin/pkg_initdb
+
 %docs_package
 
 %files
@@ -127,6 +146,7 @@ getent group weston-launch >/dev/null || %{_sbindir}/groupadd -o -r weston-launc
 %_bindir/wcap-*
 %_bindir/weston
 %_bindir/weston-info
+%_bindir/browser
 %attr(4755,root,root) %{_bindir}/weston-launch
 %{_bindir}/weston-terminal
 %_libexecdir/weston-*
@@ -137,6 +157,8 @@ getent group weston-launch >/dev/null || %{_sbindir}/groupadd -o -r weston-launc
 %{_unitdir_user}/weston.target.wants/weston.service
 %{_sysconfdir}/udev/rules.d/99-chelong-quirk.rules
 %{_sysconfdir}/profile.d/*
+%{_datadir}/packages/*.xml
+%{_datadir}/icons/default/small/*.png
 
 %files devel
 %manifest %{name}.manifest

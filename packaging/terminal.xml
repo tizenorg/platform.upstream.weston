@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns="http://tizen.org/ns/packages" package="terminal" version="0.1.3" install-location="internal-only">
+	<label>terminal</label>
+	<description>weston terminal</description>
+	<ui-application appid="terminal" exec="/usr/bin/weston-terminal" nodisplay="false" multiple="false" type="capp" taskmanage="true">
+		<icon>terminal.png</icon>
+		<label>Terminal</label>
+		<label xml:lang="en-gb">Terminal</label>
+		<label xml:lang="en-us">Terminal</label>
+	</ui-application>
+</manifest>
