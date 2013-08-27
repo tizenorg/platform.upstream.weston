@@ -15,6 +15,7 @@ Source1:        weston.service
 Source2:        weston.target
 Source3:        99-chelong-quirk.rules
 Source4:        weston.sh
+Source5:        terminal.xml
 Source1001: 	weston.manifest
 BuildRequires:	autoconf >= 2.64, automake >= 1.11
 BuildRequires:  gcc-c++
@@ -50,6 +51,7 @@ BuildRequires:	pkgconfig(xcb-xfixes)
 BuildRequires:	pkgconfig(xcursor)
 BuildRequires:  pkgconfig(glu) >= 9.0.0
 Requires(pre):  /usr/sbin/groupadd
+Requires(post): /usr/bin/pkg_initdb
 
 %description
 Weston is the reference implementation of a Wayland compositor, and a
@@ -88,6 +90,12 @@ make %{?_smp_mflags};
 %install
 %make_install
 
+# install tizen package metadata for weston-terminal
+mkdir -p %{buildroot}%{_datadir}/packages/
+mkdir -p %{buildroot}%{_datadir}/icons/default/small
+install -m 0644 %{SOURCE5} %{buildroot}%{_datadir}/packages/terminal.xml
+cp %{buildroot}%{_datadir}/weston/terminal.png %{buildroot}%{_datadir}/icons/default/small/
+
 # install example clients
 install -m 755 clients/weston-simple-touch %{buildroot}%{_bindir}
 install -m 755 clients/weston-simple-shm %{buildroot}%{_bindir}
@@ -118,6 +126,9 @@ install -m 0644 %{SOURCE4} $RPM_BUILD_ROOT/%{_sysconfdir}/profile.d/
 %pre
 getent group weston-launch >/dev/null || %{_sbindir}/groupadd -o -r weston-launch
 
+%post
+/usr/bin/pkg_initdb
+
 %docs_package
 
 %files
@@ -137,6 +148,8 @@ getent group weston-launch >/dev/null || %{_sbindir}/groupadd -o -r weston-launc
 %{_unitdir_user}/weston.target.wants/weston.service
 %{_sysconfdir}/udev/rules.d/99-chelong-quirk.rules
 %{_sysconfdir}/profile.d/*
+%{_datadir}/packages/terminal.xml
+%{_datadir}/icons/default/small/terminal.png
 
 %files devel
 %manifest %{name}.manifest
