@@ -1070,6 +1070,7 @@ notify_touch(struct weston_seat *seat, uint32_t time, int touch_id,
 			touch->grab_y = y;
 		}
 
+		move_pointer(seat, x, y);
 		break;
 	case WL_TOUCH_MOTION:
 		es = (struct weston_surface *) touch->focus;
@@ -1078,6 +1079,7 @@ notify_touch(struct weston_seat *seat, uint32_t time, int touch_id,
 
 		weston_surface_from_global_fixed(es, x, y, &sx, &sy);
 		grab->interface->motion(grab, time, touch_id, sx, sy);
+		move_pointer(seat, x, y);
 		break;
 	case WL_TOUCH_UP:
 		weston_compositor_idle_release(ec);
