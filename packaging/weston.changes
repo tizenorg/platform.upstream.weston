@@ -1,3 +1,7 @@
+* Wed Aug 28 2013 Ossama Othman <ossama.othman@intel.com> submit/tizen/20130823.165548@163279b
+- evdev: Initliaze device->link so we can wl_list_remove() without crashing
+- Fix TIVI-1679
+
 * Thu Aug 22 2013 Ossama Othman <ossama.othman@intel.com> 1.2.0@56c32bd
 - Update to 1.2.1
 
