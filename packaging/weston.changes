@@ -1,0 +1,57 @@
+* Wed Aug 28 2013 Ossama Othman <ossama.othman@intel.com> submit/tizen/20130823.165548@163279b
+- evdev: Initliaze device->link so we can wl_list_remove() without crashing
+- Fix TIVI-1679
+
+* Thu Aug 22 2013 Ossama Othman <ossama.othman@intel.com> 1.2.0@56c32bd
+- Update to 1.2.1
+
+* Thu Aug 01 2013 Ossama Othman <ossama.othman@intel.com> submit/tizen/20130726.203035@2a224be
+- Add initial touch support to clients.
+
+* Fri Jul 26 2013 Rusty Lynch <rusty.lynch@intel.com> submit/tizen/20130725.223721@872ba32
+- Add calibration values for chelong display
+
+* Thu Jul 25 2013 Rusty Lynch <rusty.lynch@intel.com> accepted/tizen/20130719.063456@cd5293b
+- TIVI-1086: Fix handling of touch device
+- Add a new clients subpackage
+
+* Wed Jul 24 2013 Rusty Lynch <rusty.lynch@intel.com> accepted/tizen/20130719.063456@a7bec7a
+- Add a new clients subpackage
+
+* Tue Jul 16 2013 Ossama Othman <ossama.othman@intel.com> 1.2.0@1427ac4
+- Update to 1.2.0
+
+* Thu Jun 27 2013 Rusty Lynch <rusty.lynch@intel.com> accepted/tizen/20130627.155212@597c6fc
+- TIVI-1063: Disable lockscreen
+
+* Wed Jun 26 2013 Rusty Lynch <rusty.lynch@intel.com> submit/tizen/20130624.224834@a4a42d8
+- Add tizen environment file
+
+* Mon Jun 24 2013 Rusty Lynch <rusty.lynch@intel.com> submit/tizen/20130620.235949@109d186
+- Add udev rule to quirk the touchscreen on Chelong
+- compositor-drm: Add quirk loading from udev
+- evdev: Add support for device quirks and implement axes swapping
+
+* Thu Jun 20 2013 Rusty Lynch <rusty.lynch@intel.com> 1.1.1@f7089fb
+- weston-launch: Run weston in the user login shell
+- weston-launch: Don't exit on SIGTERM
+- Update to 1.1.1
+
+* Wed Jun 05 2013 Rusty Lynch <rusty.lynch@intel.com> 1.1.0@9d774db
+- Update to 1.1.0
+
+* Thu Apr 11 2013 Anas Nashif <anas.nashif@intel.com> submit/trunk/20130411.235236@639026a
+- Also package devel sub-package for header files
+
+* Thu Apr 11 2013 Anas Nashif <anas.nashif@intel.com> 1.0.6@aa865ba
+- Update to 1.0.6
+
+* Wed Feb 13 2013 Anas Nashif <anas.nashif@intel.com> 1.0.4@d32e140
+- Update to 1.0.4
+
+* Mon Dec 17 2012 Anas Nashif <anas.nashif@intel.com> 1.0.3@85b1093
+- Update to 1.0.3
+
+* Fri Nov 30 2012 Anas Nashif <anas.nashif@intel.com> 57b751b
+- Update to 1.0.2
+
