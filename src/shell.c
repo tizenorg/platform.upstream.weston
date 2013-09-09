@@ -3124,7 +3124,10 @@ click_to_activate_binding(struct weston_seat *seat, uint32_t time, uint32_t butt
 	struct weston_surface *focus;
 	struct weston_surface *main_surface;
 
-	focus = (struct weston_surface *) seat->pointer->focus;
+	if (button == BTN_LEFT)
+		focus = (struct weston_surface *) seat->pointer->focus;
+	else
+		focus = (struct weston_surface *) seat->touch->focus;
 	if (!focus)
 		return;
 
@@ -4487,6 +4490,9 @@ shell_add_bindings(struct weston_compositor *ec, struct desktop_shell *shell)
 				          MODIFIER_CTRL | MODIFIER_ALT,
 				          terminate_binding, ec);
 	weston_compositor_add_button_binding(ec, BTN_LEFT, 0,
+					     click_to_activate_binding,
+					     shell);
+	weston_compositor_add_button_binding(ec, BTN_TOUCH, 0,
 					     click_to_activate_binding,
 					     shell);
 	weston_compositor_add_axis_binding(ec, WL_POINTER_AXIS_VERTICAL_SCROLL,
