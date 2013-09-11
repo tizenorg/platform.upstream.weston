@@ -3129,8 +3129,8 @@ on_caught_signal(int s, siginfo_t *siginfo, void *context)
 	raise(SIGTRAP);
 }
 
-static void *
-load_module(const char *name, const char *entrypoint)
+WL_EXPORT void *
+weston_load_module(const char *name, const char *entrypoint)
 {
 	char path[PATH_MAX];
 	void *module, *init;
@@ -3180,7 +3180,7 @@ load_modules(struct weston_compositor *ec, const char *modules,
 	while (*p) {
 		end = strchrnul(p, ',');
 		snprintf(buffer, sizeof buffer, "%.*s", (int) (end - p), p);
-		module_init = load_module(buffer, "module_init");
+		module_init = weston_load_module(buffer, "module_init");
 		if (module_init)
 			module_init(ec, argc, argv);
 		p = end;
@@ -3409,7 +3409,7 @@ int main(int argc, char *argv[])
 	weston_config_section_get_string(section, "modules",
 					 &modules, "desktop-shell.so");
 
-	backend_init = load_module(backend, "backend_init");
+	backend_init = weston_load_module(backend, "backend_init");
 	if (!backend_init)
 		exit(EXIT_FAILURE);
 
