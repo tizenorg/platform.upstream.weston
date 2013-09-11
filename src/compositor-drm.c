@@ -2485,10 +2485,11 @@ splash_configure(struct weston_surface *surface,
 		 int32_t sx, int32_t sy, int32_t width, int32_t height)
 {
 	struct weston_output *output = surface->configure_private;
+	int x, y;
 
-	weston_surface_configure(surface, output->x + 100, output->y + 100,
-				 output->current->width,
-				 output->current->height);
+	x = output->x + output->current->width / 2 - width / 2,
+	y = output->y + output->current->height / 2 - height / 2,
+	weston_surface_configure(surface, x, y, width, height);
 	weston_surface_update_transform(surface);
 }
 
