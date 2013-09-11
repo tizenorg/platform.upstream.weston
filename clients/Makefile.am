@@ -34,8 +34,17 @@ AM_CPPFLAGS =					\
 
 if BUILD_SIMPLE_CLIENTS
 simple_clients_programs =			\
+	weston-splash-client			\
 	weston-simple-shm			\
 	weston-simple-touch
+
+weston_splash_client_SOURCES = splash-client.c 	\
+	splash-client-protocol.h		\
+	splash-protocol.c			\
+	../shared/os-compatibility.c		\
+	../shared/os-compatibility.h
+weston_splash_client_CPPFLAGS = $(SIMPLE_CLIENT_CFLAGS)
+weston_splash_client_LDADD = $(SIMPLE_CLIENT_LIBS)
 
 weston_simple_shm_SOURCES = simple-shm.c 	\
 	../shared/os-compatibility.c		\
@@ -223,6 +232,8 @@ BUILT_SOURCES =					\
 	desktop-shell-protocol.c		\
 	tablet-shell-client-protocol.h		\
 	tablet-shell-protocol.c			\
+	splash-client-protocol.h		\
+	splash-protocol.c			\
 	subsurface-client-protocol.h		\
 	subsurface-protocol.c			\
 	workspaces-client-protocol.h		\

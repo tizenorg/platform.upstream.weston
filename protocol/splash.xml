@@ -1,0 +1,10 @@
+<protocol name="splash">
+
+  <interface name="splash" version="1">
+    <request name="set_surface">
+      <arg name="surface" type="object" interface="wl_surface"/>
+    </request>
+
+    <request name="done" />
+  </interface>
+</protocol>

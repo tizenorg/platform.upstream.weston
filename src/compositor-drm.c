@@ -48,6 +48,8 @@
 #include "udev-seat.h"
 #include "launcher-util.h"
 
+#include "splash-server-protocol.h"
+
 #ifndef DRM_CAP_TIMESTAMP_MONOTONIC
 #define DRM_CAP_TIMESTAMP_MONOTONIC 0x6
 #endif
@@ -2444,10 +2446,8 @@ planes_binding(struct weston_seat *seat, uint32_t time, uint32_t key, void *data
 }
 
 static void
-renderer_binding(struct weston_seat *seat, uint32_t time, uint32_t key,
-		 void *data)
+switch_to_gl_renderer(struct drm_compositor *c)
 {
-	struct drm_compositor *c = data;
 	struct drm_output *output;
 	struct weston_surface *surface;
 
@@ -2475,6 +2475,76 @@ renderer_binding(struct weston_seat *seat, uint32_t time, uint32_t key,
 		c->base.renderer->create_surface(surface);
 
 	c->use_pixman = 0;
+}
+
+static void
+splash_configure(struct weston_surface *surface,
+		 int32_t sx, int32_t sy, int32_t width, int32_t height)
+{
+	struct weston_output *output = surface->configure_private;
+
+	weston_surface_configure(surface, output->x + 100, output->y + 100,
+				 output->current->width,
+				 output->current->height);
+	weston_surface_update_transform(surface);
+}
+
+static void
+splash_set_surface(struct wl_client *client, struct wl_resource *resource,
+		   struct wl_resource *surface_resource)
+{
+	struct drm_compositor *c = wl_resource_get_user_data(resource);
+	struct weston_output *output;
+	struct weston_surface *surface;
+
+	surface = wl_resource_get_user_data(surface_resource);
+
+	output = container_of(c->base.output_list.next,
+			      struct weston_output, link);
+
+	if (!weston_surface_is_mapped(surface))
+		wl_list_insert(&c->base.cursor_layer.surface_list,
+			       &surface->layer_link);
+
+	surface->configure_private = output;
+	surface->configure = splash_configure;
+}
+
+static void
+splash_done(struct wl_client *client, struct wl_resource *resource)
+{
+	struct drm_compositor *c = wl_resource_get_user_data(resource);
+	int (*module_init)(struct weston_compositor *, int *, char **);
+	int argc = 0;
+	char *argv = NULL;
+
+	switch_to_gl_renderer(c);
+
+	module_init = weston_load_module("desktop-shell.so", "module_init");
+
+	module_init(&c->base, &argc, &argv);
+}
+
+static const struct splash_interface splash_implementation = {
+	splash_set_surface,
+	splash_done
+};
+
+static void
+bind_splash(struct wl_client *client,
+	    void *data, uint32_t vresion, uint32_t id)
+{
+	struct drm_compositor *c = data;
+	struct wl_resource *resource;
+
+	resource = wl_resource_create(client, &splash_interface, 1, id);
+	if (!resource) {
+		wl_client_post_no_memory(client);
+		return;
+	}
+
+	wl_resource_set_implementation(resource, &splash_implementation,
+				       c, NULL);
 }
 
 static struct weston_compositor *
@@ -2609,8 +2679,10 @@ drm_compositor_create(struct wl_display *display,
 					    planes_binding, ec);
 	weston_compositor_add_debug_binding(&ec->base, KEY_V,
 					    planes_binding, ec);
-	weston_compositor_add_debug_binding(&ec->base, KEY_W /* sWitch renderer :) */,
-					    renderer_binding, ec);
+
+	if (!wl_global_create(ec->base.wl_display, &splash_interface,
+			      1, ec, bind_splash))
+		weston_log("failed to create splash global\n");
 
 	return &ec->base;
 

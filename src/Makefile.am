@@ -155,6 +155,8 @@ drm_backend_la_SOURCES =			\
 	evdev-touchpad.c			\
 	launcher-util.c				\
 	launcher-util.h				\
+	splash-server-protocol.h		\
+	splash-protocol.c			\
 	libbacklight.c				\
 	libbacklight.h
 endif
@@ -313,6 +315,8 @@ BUILT_SOURCES =					\
 	input-method-server-protocol.h		\
 	workspaces-server-protocol.h		\
 	workspaces-protocol.c			\
+	splash-server-protocol.h		\
+	splash-protocol.c			\
 	subsurface-server-protocol.h		\
 	subsurface-protocol.c			\
 	git-version.h
