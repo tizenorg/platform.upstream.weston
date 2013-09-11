@@ -105,6 +105,9 @@ struct drm_compositor {
 
 	clockid_t clock;
 	struct udev_input input;
+
+	struct weston_process splash_proc;
+	int splash_done;
 };
 
 struct drm_mode {
@@ -2511,18 +2514,25 @@ splash_set_surface(struct wl_client *client, struct wl_resource *resource,
 }
 
 static void
-splash_done(struct wl_client *client, struct wl_resource *resource)
+finish_splash(struct drm_compositor *c)
 {
-	struct drm_compositor *c = wl_resource_get_user_data(resource);
 	int (*module_init)(struct weston_compositor *, int *, char **);
 	int argc = 0;
 	char *argv = NULL;
 
 	switch_to_gl_renderer(c);
-
 	module_init = weston_load_module("desktop-shell.so", "module_init");
-
 	module_init(&c->base, &argc, &argv);
+	c->splash_done = 1;
+}
+
+static void
+splash_done(struct wl_client *client, struct wl_resource *resource)
+{
+	struct drm_compositor *c = wl_resource_get_user_data(resource);
+
+	if (!c->splash_done)
+		finish_splash(c);
 }
 
 static const struct splash_interface splash_implementation = {
@@ -2545,6 +2555,17 @@ bind_splash(struct wl_client *client,
 
 	wl_resource_set_implementation(resource, &splash_implementation,
 				       c, NULL);
+}
+
+static void
+splash_client_sigchld(struct weston_process *process, int status)
+{
+	struct drm_compositor *c;
+
+	c = container_of(process, struct drm_compositor, splash_proc);
+
+	if (!c->splash_done)
+		finish_splash(c);
 }
 
 static struct weston_compositor *
@@ -2683,6 +2704,10 @@ drm_compositor_create(struct wl_display *display,
 	if (!wl_global_create(ec->base.wl_display, &splash_interface,
 			      1, ec, bind_splash))
 		weston_log("failed to create splash global\n");
+
+	weston_client_launch(&ec->base, &ec->splash_proc,
+			     LIBEXECDIR "/weston-splash-client",
+			     splash_client_sigchld);
 
 	return &ec->base;
 

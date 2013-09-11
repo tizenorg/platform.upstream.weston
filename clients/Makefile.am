@@ -24,6 +24,7 @@ libexec_PROGRAMS =				\
 	$(screenshooter)			\
 	$(screensaver)				\
 	$(keyboard)				\
+	$(splash_client)			\
 	weston-simple-im
 
 AM_CFLAGS = $(GCC_CFLAGS)
@@ -34,10 +35,10 @@ AM_CPPFLAGS =					\
 
 if BUILD_SIMPLE_CLIENTS
 simple_clients_programs =			\
-	weston-splash-client			\
 	weston-simple-shm			\
 	weston-simple-touch
 
+splash_client = weston-splash-client
 weston_splash_client_SOURCES = splash-client.c 	\
 	splash-client-protocol.h		\
 	splash-protocol.c			\
