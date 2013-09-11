@@ -286,6 +286,8 @@ weston_surface_create(struct weston_compositor *compositor)
 	wl_list_init(&surface->link);
 	wl_list_init(&surface->layer_link);
 
+	wl_list_insert(&compositor->allsurf_list, &surface->allsurf_link);
+
 	surface->compositor = compositor;
 	surface->alpha = 1.0;
 
@@ -1043,6 +1045,8 @@ weston_surface_destroy(struct weston_surface *surface)
 		wl_resource_destroy(cb->resource);
 
 	weston_surface_set_transform_parent(surface, NULL);
+
+	wl_list_remove(&surface->allsurf_link);
 
 	free(surface);
 }
@@ -2912,6 +2916,7 @@ weston_compositor_init(struct weston_compositor *ec,
 			      ec, bind_subcompositor))
 		return -1;
 
+	wl_list_init(&ec->allsurf_list);
 	wl_list_init(&ec->surface_list);
 	wl_list_init(&ec->plane_list);
 	wl_list_init(&ec->layer_list);

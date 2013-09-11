@@ -548,6 +548,7 @@ struct weston_compositor {
 	struct weston_layer fade_layer;
 	struct weston_layer cursor_layer;
 
+	struct wl_list allsurf_list;
 	struct wl_list output_list;
 	struct wl_list seat_list;
 	struct wl_list layer_list;
@@ -704,6 +705,7 @@ struct weston_surface {
 	pixman_region32_t input;
 	struct wl_list link;
 	struct wl_list layer_link;
+	struct wl_list allsurf_link;
 	float alpha;                     /* part of geometry, see below */
 	struct weston_plane *plane;
 

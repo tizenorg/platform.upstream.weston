@@ -2443,6 +2443,40 @@ planes_binding(struct weston_seat *seat, uint32_t time, uint32_t key, void *data
 	}
 }
 
+static void
+renderer_binding(struct weston_seat *seat, uint32_t time, uint32_t key,
+		 void *data)
+{
+	struct drm_compositor *c = data;
+	struct drm_output *output;
+	struct weston_surface *surface;
+
+	if (!c->use_pixman)
+		return;
+
+	weston_log("Switching to GL renderer\n");
+
+	wl_list_for_each(surface, &c->base.allsurf_list, allsurf_link)
+		c->base.renderer->destroy_surface(surface);
+
+	wl_list_for_each(output, &c->base.output_list, base.link)
+		pixman_renderer_output_destroy(&output->base);
+
+	/* this function does not exist
+	pixman_renderer_fini(&c->base);
+	*/
+
+	init_egl(c);
+
+	wl_list_for_each(output, &c->base.output_list, base.link)
+		drm_output_init_egl(output, c);
+
+	wl_list_for_each(surface, &c->base.allsurf_list, allsurf_link)
+		c->base.renderer->create_surface(surface);
+
+	c->use_pixman = 0;
+}
+
 static struct weston_compositor *
 drm_compositor_create(struct wl_display *display,
 		      int connector, const char *seat_id, int tty, int pixman,
@@ -2575,6 +2609,8 @@ drm_compositor_create(struct wl_display *display,
 					    planes_binding, ec);
 	weston_compositor_add_debug_binding(&ec->base, KEY_V,
 					    planes_binding, ec);
+	weston_compositor_add_debug_binding(&ec->base, KEY_W /* sWitch renderer :) */,
+					    renderer_binding, ec);
 
 	return &ec->base;
 
