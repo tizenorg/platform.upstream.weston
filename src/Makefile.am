@@ -113,9 +113,10 @@ endif
 if ENABLE_EGL
 gl_renderer = gl-renderer.la
 gl_renderer_la_LDFLAGS = -module -avoid-version
-gl_renderer_la_LIBADD = $(COMPOSITOR_LIBS)
+gl_renderer_la_LIBADD = $(COMPOSITOR_LIBS) $(EGL_LIBS)
 gl_renderer_la_CFLAGS =				\
 	$(COMPOSITOR_CFLAGS)			\
+	$(EGL_CFLAGS)				\
 	$(GCC_CFLAGS)
 gl_renderer_la_SOURCES =			\
 	gl-renderer.h				\

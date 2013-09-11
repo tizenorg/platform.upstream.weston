@@ -62,7 +62,7 @@ AC_ARG_ENABLE(egl, [  --disable-egl],,
 AM_CONDITIONAL(ENABLE_EGL, test x$enable_egl = xyes)
 if test x$enable_egl = xyes; then
 	AC_DEFINE([ENABLE_EGL], [1], [Build Weston with EGL support])
-	COMPOSITOR_MODULES="$COMPOSITOR_MODULES egl >= 7.10 glesv2"
+	PKG_CHECK_MODULES(EGL, [egl >= 7.10 glesv2])
 fi
 
 AC_ARG_ENABLE(xkbcommon,
@@ -146,7 +146,7 @@ AC_ARG_ENABLE(drm-compositor, [  --enable-drm-compositor],,
 AM_CONDITIONAL(ENABLE_DRM_COMPOSITOR, test x$enable_drm_compositor = xyes -a x$enable_egl = xyes)
 if test x$enable_drm_compositor = xyes -a x$enable_egl = xyes; then
   AC_DEFINE([BUILD_DRM_COMPOSITOR], [1], [Build the DRM compositor])
-  PKG_CHECK_MODULES(DRM_COMPOSITOR, [libudev >= 136 libdrm >= 2.4.30 gbm mtdev >= 1.1.0])
+  PKG_CHECK_MODULES(DRM_COMPOSITOR, [libudev >= 136 libdrm >= 2.4.30 gbm mtdev >= 1.1.0 egl])
 fi
 
 
