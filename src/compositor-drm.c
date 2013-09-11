@@ -2517,13 +2517,7 @@ splash_set_surface(struct wl_client *client, struct wl_resource *resource,
 static void
 finish_splash(struct drm_compositor *c)
 {
-	int (*module_init)(struct weston_compositor *, int *, char **);
-	int argc = 0;
-	char *argv = NULL;
-
 	switch_to_gl_renderer(c);
-	module_init = weston_load_module("desktop-shell.so", "module_init");
-	module_init(&c->base, &argc, &argv);
 	c->splash_done = 1;
 }
 
