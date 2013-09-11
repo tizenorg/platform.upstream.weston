@@ -40,7 +40,6 @@ weston_SOURCES =				\
 	subsurface-server-protocol.h		\
 	bindings.c				\
 	animation.c				\
-	gl-renderer.h				\
 	noop-renderer.c				\
 	pixman-renderer.c			\
 	pixman-renderer.h			\
@@ -48,11 +47,6 @@ weston_SOURCES =				\
 	../shared/matrix.h			\
 	weston-launch.h				\
 	weston-egl-ext.h
-
-if ENABLE_EGL
-weston_SOURCES +=				\
-	gl-renderer.c
-endif
 
 git-version.h : .FORCE
 	$(AM_V_GEN)(echo "#define BUILD_ID \"$(shell git --git-dir=$(top_srcdir)/.git describe --always --dirty) $(shell git --git-dir=$(top_srcdir)/.git log -1 --format='%s (%ci)')\"" > $@-new; \
@@ -100,6 +94,7 @@ module_LTLIBRARIES =				\
 	$(tablet_shell)				\
 	$(cms_static)				\
 	$(cms_colord)				\
+	$(gl_renderer)				\
 	$(x11_backend)				\
 	$(drm_backend)				\
 	$(wayland_backend)			\
@@ -113,6 +108,18 @@ if INSTALL_RPI_COMPOSITOR
 module_LTLIBRARIES += $(rpi_backend)
 else
 noinst_LTLIBRARIES += $(rpi_backend)
+endif
+
+if ENABLE_EGL
+gl_renderer = gl-renderer.la
+gl_renderer_la_LDFLAGS = -module -avoid-version
+gl_renderer_la_LIBADD = $(COMPOSITOR_LIBS)
+gl_renderer_la_CFLAGS =				\
+	$(COMPOSITOR_CFLAGS)			\
+	$(GCC_CFLAGS)
+gl_renderer_la_SOURCES =			\
+	gl-renderer.h				\
+	gl-renderer.c
 endif
 
 if ENABLE_X11_COMPOSITOR

@@ -3148,7 +3148,7 @@ weston_load_module(const char *name, const char *entrypoint)
 	}
 
 	weston_log("Loading module '%s'\n", path);
-	module = dlopen(path, RTLD_NOW);
+	module = dlopen(path, RTLD_NOW | RTLD_GLOBAL);
 	if (!module) {
 		weston_log("Failed to load module: %s\n", dlerror());
 		return NULL;
