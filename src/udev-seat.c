@@ -44,10 +44,7 @@ static void
 device_parse_quirks(struct evdev_device *evdev_device,
 		    struct udev_device *udev_device)
 {
-	if (udev_device_get_property_value(udev_device, "WL_QUIRK_SWAP_AXES"))
-		evdev_device->quirks |= EVDEV_QUIRK_SWAP_AXES;
-	else if (udev_device_get_property_value(udev_device, "WL_QUIRK_SWAP_XAXIS"))
-		evdev_device->quirks |= EVDEV_QUIRK_SWAP_XAXIS;
+	return;
 }
 
 static int

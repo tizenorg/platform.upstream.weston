@@ -141,38 +141,19 @@ evdev_process_absolute_motion(struct evdev_device *device,
 
 	switch (e->code) {
 	case ABS_X:
-		if (device->quirks & EVDEV_QUIRK_SWAP_AXES) {
-			device->abs.y =
-				(e->value - device->abs.min_y) * screen_height /
-				(device->abs.max_y - device->abs.min_y) +
-				device->output->y;
-		} else if (device->quirks & EVDEV_QUIRK_SWAP_XAXIS) {
-			device->abs.x =
-				(device->abs.max_x - (e->value - device->abs.min_x)) * screen_width /
-				(device->abs.max_x - device->abs.min_x) +
-				device->output->x;
-		} else {
-			/* Normally Process Y */
-			device->abs.x =
-				(e->value - device->abs.min_x) * screen_width /
-				(device->abs.max_x - device->abs.min_x) +
-				device->output->x;
-		}
+		/* Normally Process Y */
+		device->abs.x =
+			(e->value - device->abs.min_x) * screen_width /
+			(device->abs.max_x - device->abs.min_x) +
+			device->output->x;
 	        device->pending_events |= EVDEV_ABSOLUTE_MOTION;
 		break;
 	case ABS_Y:
-		if (device->quirks & EVDEV_QUIRK_SWAP_AXES) {
-			device->abs.x =
-				(e->value - device->abs.min_x) * screen_width /
-				(device->abs.max_x - device->abs.min_x) +
-				device->output->x;
-		} else {
-			/* Normally Process Y */
-			device->abs.y =
-				(e->value - device->abs.min_y) * screen_height /
-				(device->abs.max_y - device->abs.min_y) +
-				device->output->y;
-		}
+		/* Normally Process Y */
+		device->abs.y =
+			(e->value - device->abs.min_y) * screen_height /
+			(device->abs.max_y - device->abs.min_y) +
+			device->output->y;
 	        device->pending_events |= EVDEV_ABSOLUTE_MOTION;
 		break;
 	}
@@ -495,22 +476,12 @@ evdev_handle_device(struct evdev_device *device)
 		    TEST_BIT(abs_bits, ABS_MT_POSITION_Y)) {
 			ioctl(device->fd, EVIOCGABS(ABS_MT_POSITION_X),
 			      &absinfo);
-			if (device->quirks & EVDEV_QUIRK_SWAP_AXES) {
-				device->abs.min_y = absinfo.minimum;
-				device->abs.max_y = absinfo.maximum;
-			} else {
-				device->abs.min_x = absinfo.minimum;
-				device->abs.max_x = absinfo.maximum;
-			}
+			device->abs.min_x = absinfo.minimum;
+			device->abs.max_x = absinfo.maximum;
 			ioctl(device->fd, EVIOCGABS(ABS_MT_POSITION_Y),
 			      &absinfo);
-			if (device->quirks & EVDEV_QUIRK_SWAP_AXES) {
-				device->abs.min_x = absinfo.minimum;
-				device->abs.max_x = absinfo.maximum;
-			} else {
-				device->abs.min_y = absinfo.minimum;
-				device->abs.max_y = absinfo.maximum;
-			}
+			device->abs.min_y = absinfo.minimum;
+			device->abs.max_y = absinfo.maximum;
 			device->is_mt = 1;
 			device->caps |= EVDEV_TOUCH;
 
