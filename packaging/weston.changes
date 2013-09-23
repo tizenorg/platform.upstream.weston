@@ -1,3 +1,6 @@
+* Mon Sep 23 2013 Ossama Othman <ossama.othman@intel.com> accepted/tizen/20130923.213851@924597d
+- TIVI-1828: Make EFL apps use the wayland-based input method.
+
 * Mon Sep 23 2013 Ossama Othman <ossama.othman@intel.com> accepted/tizen/20130918.214754@10eaa44
 - TIVI-1726: Not add output->x/y when caculating the absolute value of touch postion.
 - We have the calibrator for touch and delete touch quirk
