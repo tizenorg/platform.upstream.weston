@@ -1,3 +1,7 @@
+* Mon Sep 23 2013 Ossama Othman <ossama.othman@intel.com> accepted/tizen/20130918.214754@10eaa44
+- TIVI-1726: Not add output->x/y when caculating the absolute value of touch postion.
+- We have the calibrator for touch and delete touch quirk
+
 * Tue Sep 17 2013 Rusty Lynch <rusty.lynch@intel.com> submit/tizen/20130909.204211@5560428
 - TIVI-1771: Fix browser metadata so homescreen can find its surface
 - Added DBUS_SESSION_BUS_ADDRESS in /etc/profile.d/weston.sh (Bug TIVI-1686 and other bugs related to dbus)
