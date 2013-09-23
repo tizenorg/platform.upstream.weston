@@ -1,3 +1,6 @@
+* Thu Sep 26 2013 Ossama Othman <ossama.othman@intel.com> accepted/tizen/20130925.220757@cb945fd
+- TIVI-1828: Make EFL apps use the wayland-based input method.
+
 * Wed Sep 25 2013 Ossama Othman <ossama.othman@intel.com> accepted/tizen/20130925.103624@58d1a75
 - Adding calibration values and bind HDMI output with touch screen of chelong monitor
 
