@@ -47,12 +47,6 @@ enum evdev_device_capability {
 	EVDEV_TOUCH = (1 << 4),
 };
 
-enum evdev_device_quirks {
-	EVDEV_QUIRK_NONE = 0,
-	EVDEV_QUIRK_SWAP_AXES = (1 << 0),
-	EVDEV_QUIRK_SWAP_XAXIS = (2 << 0),
-};
-
 struct evdev_device {
 	struct weston_seat *seat;
 	struct wl_list link;
@@ -83,7 +77,6 @@ struct evdev_device {
 
 	enum evdev_event_type pending_events;
 	enum evdev_device_capability caps;
-	uint32_t quirks;
 
 	int is_mt;
 };
