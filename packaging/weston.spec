@@ -19,6 +19,7 @@ Source5:        terminal.xml
 Source6:        browser.xml
 Source7:        browser.png
 Source8:        browser
+Source9:        99-egalax.rules
 Source1001: 	weston.manifest
 BuildRequires:	autoconf >= 2.64, automake >= 1.11
 BuildRequires:  expat-devel
@@ -126,6 +127,7 @@ ln -sf ../weston.service %{buildroot}/%{_unitdir_user}/weston.target.wants/
 
 mkdir -p $RPM_BUILD_ROOT/%{_sysconfdir}/udev/rules.d/
 install -m 0644 %{SOURCE3} $RPM_BUILD_ROOT/%{_sysconfdir}/udev/rules.d/
+install -m 0644 %{SOURCE9} $RPM_BUILD_ROOT/%{_sysconfdir}/udev/rules.d/
 
 mkdir -p $RPM_BUILD_ROOT/%{_sysconfdir}/profile.d/
 install -m 0644 %{SOURCE4} $RPM_BUILD_ROOT/%{_sysconfdir}/profile.d/
@@ -155,6 +157,7 @@ getent group weston-launch >/dev/null || %{_sbindir}/groupadd -o -r weston-launc
 %{_unitdir_user}/weston.target
 %{_unitdir_user}/weston.target.wants/weston.service
 %{_sysconfdir}/udev/rules.d/99-chelong-quirk.rules
+%{_sysconfdir}/udev/rules.d/99-egalax.rules
 %{_sysconfdir}/profile.d/*
 %{_datadir}/packages/*.xml
 %{_datadir}/icons/default/small/*.png
