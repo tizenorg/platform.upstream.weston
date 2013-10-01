@@ -13,7 +13,7 @@ Url:            http://weston.freedesktop.org/
 Source0:         %name-%version.tar.xz
 Source1:        weston.service
 Source2:        weston.target
-Source3:        99-chelong-quirk.rules
+Source3:        99-egalax.rules
 Source4:        weston.sh
 Source5:        terminal.xml
 Source6:        browser.xml
@@ -154,7 +154,7 @@ getent group weston-launch >/dev/null || %{_sbindir}/groupadd -o -r weston-launc
 %{_unitdir_user}/weston.service
 %{_unitdir_user}/weston.target
 %{_unitdir_user}/weston.target.wants/weston.service
-%{_sysconfdir}/udev/rules.d/99-chelong-quirk.rules
+%{_sysconfdir}/udev/rules.d/99-egalax.rules
 %{_sysconfdir}/profile.d/*
 %{_datadir}/packages/*.xml
 %{_datadir}/icons/default/small/*.png
