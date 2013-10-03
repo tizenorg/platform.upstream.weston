@@ -20,6 +20,7 @@ Source6:        browser.xml
 Source7:        browser.png
 Source8:        browser
 Source9:        99-egalax.rules
+Source10:       weekeyboard.xml
 Source1001: 	weston.manifest
 BuildRequires:	autoconf >= 2.64, automake >= 1.11
 BuildRequires:  expat-devel
@@ -103,6 +104,9 @@ ln -sf %{_datadir}/weston/terminal.png %{buildroot}%{_datadir}/icons/default/sma
 install -m 0644 %{SOURCE6} %{buildroot}%{_datadir}/packages/browser.xml
 cp %{SOURCE7} %{buildroot}%{_datadir}/icons/default/small/
 install -m 755 %{SOURCE8} %{buildroot}%{_bindir}/browser
+
+# install tizen package metadata for weekeyboard
+install -m 0644 %{SOURCE10} %{buildroot}%{_datadir}/packages/weekeyboard.xml
 
 # install example clients
 install -m 755 clients/weston-simple-touch %{buildroot}%{_bindir}
