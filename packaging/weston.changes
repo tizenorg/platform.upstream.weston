@@ -1,3 +1,8 @@
+* Thu Oct 03 2013 Rusty Lynch <rusty.lynch@intel.com> accepted/tizen/20130925.220757@8c7ed3e
+- TIVI-1828: Make EFL apps use the wayland-based input method.
+- TIVI-1828: Install weekeyboard.xml app metadata file.
+- TIVI-1919: Associate the Giantec display with HDMI1
+
 * Wed Sep 25 2013 Ossama Othman <ossama.othman@intel.com> accepted/tizen/20130925.103624@58d1a75
 - Adding calibration values and bind HDMI output with touch screen of chelong monitor
 
