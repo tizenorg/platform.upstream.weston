@@ -639,7 +639,7 @@ main(int argc, char *argv[])
 		switch (c) {
 		case 'u':
 			wl.new_user = optarg;
-			if (getuid() != 0)
+			if (geteuid() != 0)
 				error(1, 0, "Permission denied. -u allowed for root only");
 			break;
 		case 't':
