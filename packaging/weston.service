@@ -3,7 +3,7 @@ Description=Weston
 Requires=dbus.socket
 
 [Service]
-ExecStart=/usr/bin/weston-launch -- -i0
+ExecStart=/usr/bin/weston-launch --user=%u --tty=/dev/tty1 -- -i0
 
 [Install]
 WantedBy=weston.target
