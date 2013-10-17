@@ -1,0 +1,5 @@
+# NOTE: by setting the WL_OUTPUT we are letting weston know which display to associate the touch device with
+ATTRS{idVendor}=="0eef", ATTRS{idProduct}=="7200", ENV{WL_OUTPUT}="HDMI1"
+
+# Entry for the Cheelong Display that for some bizare reason shows up as HDMI3
+ATTRS{idVendor}=="0eef", ATTRS{idProduct}=="0001", ENV{WL_OUTPUT}="HDMI3", ENV{WL_CALIBRATION}="-1.089157 -0.013428 1507.136841 -0.009325 1.232762 -63.534794"
