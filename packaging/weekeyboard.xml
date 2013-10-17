@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns="http://tizen.org/ns/packages" package="keyboard" version="0.0.1" install-location="internal-only">
+	<label>keyboard</label>
+	<description>weekeyboard virtual keyboard</description>
+	<ui-application appid="keyboard" exec="/bin/weekeyboard" nodisplay="true" multiple="false" type="capp" taskmanage="false">
+		<icon>terminal.png</icon>
+		<label>Keyboard</label>
+		<label xml:lang="en-gb">Keyboard</label>
+		<label xml:lang="en-us">Keyboard</label>
+	</ui-application>
+</manifest>
