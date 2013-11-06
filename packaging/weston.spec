@@ -1,7 +1,7 @@
 %define _unitdir_user /usr/lib/systemd/user
 
 Name:           weston
-Version:        1.3.0
+Version:        1.3.1
 Release:        0
 Summary:        Wayland Compositor Infrastructure
 License:        MIT
@@ -48,7 +48,7 @@ BuildRequires:  pkgconfig(poppler-glib)
 BuildRequires:  pkgconfig(wayland-client)
 BuildRequires:  pkgconfig(wayland-egl)
 BuildRequires:  pkgconfig(wayland-server)
-BuildRequires:  pkgconfig(xkbcommon) >= 0.0.578
+BuildRequires:  pkgconfig(xkbcommon) >= 0.3.0
 BuildRequires:	pkgconfig(xcb)
 BuildRequires:	pkgconfig(xcb-xfixes)
 BuildRequires:	pkgconfig(xcursor)
