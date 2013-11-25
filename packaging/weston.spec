@@ -31,7 +31,6 @@ BuildRequires:  pkgconfig
 BuildRequires:  xz
 BuildRequires:  pkgconfig(cairo)
 BuildRequires:  pkgconfig(cairo-egl) >= 1.11.3
-BuildRequires:	pkgconfig(cairo-xcb)
 BuildRequires:  pkgconfig(egl) >= 7.10
 BuildRequires:  pkgconfig(gbm)
 BuildRequires:  pkgconfig(gio-2.0)
