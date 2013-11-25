@@ -1,3 +1,4 @@
+%bcond_with mobile
 %define _unitdir_user /usr/lib/systemd/user
 
 Name:           weston
@@ -13,12 +14,15 @@ Url:            http://weston.freedesktop.org/
 Source0:         %name-%version.tar.xz
 Source1:        weston.service
 Source2:        weston.target
+%if %{with mobile}
+%else
 Source3:        99-egalax.rules
-Source4:        weston.sh
 Source5:        terminal.xml
 Source6:        browser.xml
 Source7:        browser.png
 Source8:        browser
+%endif
+Source4:        weston.sh
 Source9:        weekeyboard.xml
 Source1001: 	weston.manifest
 BuildRequires:	autoconf >= 2.64, automake >= 1.11
@@ -91,6 +95,8 @@ make %{?_smp_mflags};
 
 # install tizen package metadata for weston-terminal
 mkdir -p %{buildroot}%{_datadir}/packages/
+%if %{with mobile}
+%else
 mkdir -p %{buildroot}%{_datadir}/icons/default/small
 install -m 0644 %{SOURCE5} %{buildroot}%{_datadir}/packages/terminal.xml
 ln -sf %{_datadir}/weston/terminal.png %{buildroot}%{_datadir}/icons/default/small/
@@ -99,6 +105,7 @@ ln -sf %{_datadir}/weston/terminal.png %{buildroot}%{_datadir}/icons/default/sma
 install -m 0644 %{SOURCE6} %{buildroot}%{_datadir}/packages/browser.xml
 cp %{SOURCE7} %{buildroot}%{_datadir}/icons/default/small/
 install -m 755 %{SOURCE8} %{buildroot}%{_bindir}/browser
+%endif
 
 # install tizen package metadata for weekeyboard
 install -m 0644 %{SOURCE9} %{buildroot}%{_datadir}/packages/weekeyboard.xml
@@ -124,8 +131,11 @@ install -m 644 %{SOURCE1} %{buildroot}%{_unitdir_user}/weston.service
 install -m 644 %{SOURCE2} %{buildroot}%{_unitdir_user}/weston.target
 ln -sf ../weston.service %{buildroot}/%{_unitdir_user}/weston.target.wants/
 
+%if %{with mobile}
+%else
 mkdir -p $RPM_BUILD_ROOT/%{_sysconfdir}/udev/rules.d/
 install -m 0644 %{SOURCE3} $RPM_BUILD_ROOT/%{_sysconfdir}/udev/rules.d/
+%endif
 
 mkdir -p $RPM_BUILD_ROOT/%{_sysconfdir}/profile.d/
 install -m 0644 %{SOURCE4} $RPM_BUILD_ROOT/%{_sysconfdir}/profile.d/
@@ -145,19 +155,22 @@ getent group weston-launch >/dev/null || %{_sbindir}/groupadd -o -r weston-launc
 %_bindir/wcap-*
 %_bindir/weston
 %_bindir/weston-info
+%if %{with mobile}
+%else
 %_bindir/browser
-%attr(4755,root,root) %{_bindir}/weston-launch
 %{_bindir}/weston-terminal
+%{_sysconfdir}/udev/rules.d/99-egalax.rules
+%{_datadir}/icons/default/small/*.png
+%endif
+%attr(4755,root,root) %{_bindir}/weston-launch
 %_libexecdir/weston-*
 %_libdir/weston
 %_datadir/weston
 %{_unitdir_user}/weston.service
 %{_unitdir_user}/weston.target
 %{_unitdir_user}/weston.target.wants/weston.service
-%{_sysconfdir}/udev/rules.d/99-egalax.rules
 %{_sysconfdir}/profile.d/*
 %{_datadir}/packages/*.xml
-%{_datadir}/icons/default/small/*.png
 
 %files devel
 %manifest %{name}.manifest
@@ -180,5 +193,8 @@ getent group weston-launch >/dev/null || %{_sbindir}/groupadd -o -r weston-launc
 %_bindir/weston-transformed
 %_bindir/weston-fullscreen
 %_bindir/weston-calibrator
+%if %{with mobile}
+%_bindir/weston-terminal
+%endif
 
 %changelog
