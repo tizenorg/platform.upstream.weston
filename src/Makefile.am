@@ -187,6 +187,10 @@ rpi_backend_la_CFLAGS =				\
 	$(COMPOSITOR_CFLAGS)			\
 	$(RPI_COMPOSITOR_CFLAGS)		\
 	$(RPI_BCM_HOST_CFLAGS)
+if ENABLE_DRM_COMPOSITOR
+rpi_backend_la_CFLAGS +=			\
+	$(DRM_COMPOSITOR_CFLAGS)
+endif
 rpi_backend_la_SOURCES =			\
 	compositor-rpi.c			\
 	rpi-renderer.c				\
@@ -222,6 +226,10 @@ fbdev_backend_la_CFLAGS = \
 	$(FBDEV_COMPOSITOR_CFLAGS) \
 	$(PIXMAN_CFLAGS) \
 	$(GCC_CFLAGS)
+if ENABLE_DRM_COMPOSITOR
+fbdev_backend_la_CFLAGS += \
+	$(DRM_COMPOSITOR_CFLAGS)
+endif
 fbdev_backend_la_SOURCES = \
 	compositor-fbdev.c \
 	udev-seat.c \
