@@ -1,0 +1,50 @@
+<protocol name="mobile">
+  <interface name="input_panel" version="1">
+    <description summary="interface for implementing keyboards">
+      Only one client can bind this interface at a time.
+    </description>
+
+    <request name="set_surface">
+      <description summary="set the surface type as a keyboard">
+	A keybaord surface is only shown, when a text model is active
+      </description>
+
+      <arg name="surface" type="object" interface="wl_surface"/>
+      <arg name="output" type="object" interface="wl_output"/>
+    </request>
+
+  </interface>
+
+  <interface name="wl_control" version="1">
+    <request name="get_control">
+      <arg name="id" type="new_id" interface="surface_control"/>
+      <arg name="shsurf" type="object" interface="wl_shell_surface"/>
+    </request>
+
+    <request name="destroy" type="destructor">
+    </request>
+  </interface>
+
+  <interface name="surface_control" version="1">
+    <request name="set_visibility">
+      <arg name="surface" type="object" interface="wl_surface"/>
+      <arg name="visibility" type="uint"/>
+    </request>
+
+    <enum name="visibility">
+      <entry name="INVISIBLE" value="1" />
+      <entry name="VISIBLE" value="2" />
+    </enum>
+
+    <request name="set_dest_rect">
+      <arg name="surface" type="object" interface="wl_surface"/>
+      <arg name="width" type="uint"/>
+      <arg name="height" type="uint"/>
+    </request>
+
+    <event name="visibility_change">
+      <arg name="visibility" type="uint"/>
+    </event>
+  </interface>
+
+</protocol>

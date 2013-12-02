@@ -1,3 +1,4 @@
+%bcond_with mobile
 %define _unitdir_user /usr/lib/systemd/user
 
 Name:           weston
@@ -52,6 +53,7 @@ BuildRequires:  pkgconfig(glu) >= 9.0.0
 Requires(pre):  /usr/sbin/groupadd
 Requires(post): /usr/bin/pkg_initdb
 
+
 %description
 Weston is the reference implementation of a Wayland compositor, and a
 useful compositor in its own right. Weston has various backends that
@@ -78,12 +80,37 @@ Group:   Graphics & UI Framework/Development
 This package provides a set of example wayland clients useful for validating the functionality of wayland
 with very little dependencies on other system components
 
+%if %{with mobile}
+%package -n mobile-shell
+Summary:    mobile-shell
+Group:      Graphics & UI Framework
+BuildRequires: pkgconfig(weston) > 1.2.2
+BuildRequires: pkgconfig(pixman-1)
+BuildRequires: pkgconfig(xkbcommon) >= 0.0.578
+BuildRequires: pkgconfig(aul)
+BuildRequires: pkgconfig(vconf)
+
+%description -n mobile-shell
+Weston Plugins for Mobile
+
+
+%package -n mobile-shell-devel
+Summary:    Development files for mobile-shell
+Group:      Graphics & UI Framework/Development
+%description -n mobile-shell-devel
+Development files that expose the wayland extended protocols for Mobile.
+%endif
+
 %prep
 %setup -q
 cp %{SOURCE1001} .
 
 %build
+%if %{with mobile}
+%autogen --disable-static --disable-setuid-install  --enable-simple-clients --enable-clients --disable-libunwind --disable-xwayland --disable-xwayland-test --enable-mobile-shell
+%else
 %autogen --disable-static --disable-setuid-install  --enable-simple-clients --enable-clients --disable-libunwind --disable-xwayland --disable-xwayland-test
+%endif
 make %{?_smp_mflags};
 
 %install
@@ -129,6 +156,13 @@ install -m 0644 %{SOURCE3} $RPM_BUILD_ROOT/%{_sysconfdir}/udev/rules.d/
 
 mkdir -p $RPM_BUILD_ROOT/%{_sysconfdir}/profile.d/
 install -m 0644 %{SOURCE4} $RPM_BUILD_ROOT/%{_sysconfdir}/profile.d/
+
+%if %{with mobile}
+# configurations
+%define weston_conf %{_sysconfdir}/xdg/weston
+mkdir -p %{buildroot}%{weston_conf} > /dev/null 2>&1
+install -m 0644 src/mobile-shell/weston.ini %{buildroot}%{weston_conf}
+%endif
 
 %pre
 getent group weston-launch >/dev/null || %{_sbindir}/groupadd -o -r weston-launch
@@ -180,5 +214,20 @@ getent group weston-launch >/dev/null || %{_sbindir}/groupadd -o -r weston-launc
 %_bindir/weston-transformed
 %_bindir/weston-fullscreen
 %_bindir/weston-calibrator
+
+%if %{with mobile}
+%files -n mobile-shell
+%defattr(-,root,root,-)
+%dir %{_libdir}/weston/
+%{_libdir}/weston/mobile-shell.so
+%{_libdir}/libmobile-shell-client.so.*
+%{weston_conf}/weston.ini
+
+%files -n mobile-shell-devel
+%defattr(-,root,root,-)
+%{_includedir}/%{name}/input-method-client-protocol.h
+%{_includedir}/%{name}/mobile-shell-client-protocol.h
+%{_libdir}/libmobile-shell-client.so
+%endif
 
 %changelog

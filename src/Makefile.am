@@ -1,3 +1,4 @@
+
 bin_PROGRAMS = weston				\
 	$(weston_launch)
 
@@ -65,10 +66,16 @@ git-version.h : .FORCE
 .FORCE :
 
 if ENABLE_XWAYLAND
-SUBDIRS = xwayland
+XWAYLAND_DIR = xwayland
 endif
 
-DIST_SUBDIRS = xwayland
+if ENABLE_MOBILE_SHELL
+MOBILE_SHELL_DIR = mobile-shell
+endif
+
+SUBDIRS = $(XWAYLAND_DIR) $(MOBILE_SHELL_DIR)
+
+DIST_SUBDIRS = xwayland mobile-shell
 
 
 if BUILD_WESTON_LAUNCH

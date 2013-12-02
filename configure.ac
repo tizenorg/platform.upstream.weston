@@ -443,10 +443,19 @@ if test x$wayland_scanner = x; then
 	AC_MSG_ERROR([wayland-scanner is needed to compile weston])
 fi
 
+AC_ARG_ENABLE(mobile-shell, [  --enable-mobile-shell],,
+	      enable_mobile_shell=no)
+AM_CONDITIONAL(ENABLE_MOBILE_SHELL, test x$enable_mobile_shell = xyes)
+if test x$enable_mobile_shell = xyes; then
+  PKG_CHECK_MODULES([MOBILE_SHELL], weston >= 1.1.1 pixman-1 xkbcommon vconf aul)
+  AC_DEFINE([BUILD_MOBILE_SHELL], [1], [Build the mobile shell])
+fi
+
 AC_CONFIG_FILES([Makefile
 		 shared/Makefile
 		 src/Makefile
 		 src/xwayland/Makefile
+		 src/mobile-shell/Makefile
 		 src/version.h
 		 src/weston.pc
 		 clients/Makefile
