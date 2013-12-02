@@ -21,6 +21,8 @@ Source7:        browser.png
 Source8:        browser
 Source9:        weekeyboard.xml
 Source1001: 	weston.manifest
+# Gbp-Ignore-Patches: 0
+Patch0: 	0001-add-optional-condition-for-rpi-and-fbdev.patch
 BuildRequires:	autoconf >= 2.64, automake >= 1.11
 BuildRequires:  expat-devel
 BuildRequires:  libjpeg-devel
@@ -48,7 +50,6 @@ BuildRequires:  pkgconfig(wayland-client)
 BuildRequires:  pkgconfig(wayland-egl)
 BuildRequires:  pkgconfig(wayland-server)
 BuildRequires:  pkgconfig(xkbcommon) >= 0.3.0
-BuildRequires:  pkgconfig(glu) >= 9.0.0
 Requires(pre):  /usr/sbin/groupadd
 Requires(post): /usr/bin/pkg_initdb
 
@@ -81,9 +82,10 @@ with very little dependencies on other system components
 %prep
 %setup -q
 cp %{SOURCE1001} .
+%patch0 -p1
 
 %build
-%autogen --disable-static --disable-setuid-install  --enable-simple-clients --enable-clients --disable-libunwind --disable-xwayland --disable-xwayland-test
+%autogen --disable-static --disable-setuid-install  --enable-simple-clients --enable-clients --disable-libunwind --disable-xwayland --disable-xwayland-test --disable-x11-compositor
 make %{?_smp_mflags};
 
 %install

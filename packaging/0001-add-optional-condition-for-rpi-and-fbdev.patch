@@ -1,0 +1,47 @@
+From 0013f05543d182445d85122008abee81906314c5 Mon Sep 17 00:00:00 2001
+From: Juan Zhao <juan.j.zhao@intel.com>
+Date: Fri, 29 Nov 2013 14:39:27 +0800
+Subject: [PATCH] add optional condition for rpi and fbdev
+
+add DRM_COMPOSITOR_CFLAGS to rpi backend and fbdev backend
+	because, the build will fail when launcher_util.c's header
+		 as -I/usr/include/libdrm is not added to CFLAGS
+	#ifdef BUILD_DRM_COMPOSITOR
+	#include <xf86drm.h>
+	#endif
+
+Change-Id: I51df68513da57d7a009d64c657ddf1c7a221a68e
+Signed-off-by: Juan Zhao <juan.j.zhao@intel.com>
+---
+ src/Makefile.am       |    8 ++++++++
+ 1 files changed, 8 insertions(+)
+
+ddiff --git a/src/Makefile.am b/src/Makefile.am
+index 749c074..a5c3537 100644
+--- a/src/Makefile.am
++++ b/src/Makefile.am
+@@ -187,6 +187,10 @@ rpi_backend_la_CFLAGS =				\
+ 	$(COMPOSITOR_CFLAGS)			\
+ 	$(RPI_COMPOSITOR_CFLAGS)		\
+ 	$(RPI_BCM_HOST_CFLAGS)
++if ENABLE_DRM_COMPOSITOR
++rpi_backend_la_CFLAGS +=			\
++	$(DRM_COMPOSITOR_CFLAGS)
++endif
+ rpi_backend_la_SOURCES =			\
+ 	compositor-rpi.c			\
+ 	rpi-renderer.c				\
+@@ -222,6 +226,10 @@ fbdev_backend_la_CFLAGS = \
+ 	$(FBDEV_COMPOSITOR_CFLAGS) \
+ 	$(PIXMAN_CFLAGS) \
+ 	$(GCC_CFLAGS)
++if ENABLE_DRM_COMPOSITOR
++fbdev_backend_la_CFLAGS += \
++	$(DRM_COMPOSITOR_CFLAGS)
++endif
+ fbdev_backend_la_SOURCES = \
+ 	compositor-fbdev.c \
+ 	udev-seat.c \
+-- 
+1.7.10.4
+
