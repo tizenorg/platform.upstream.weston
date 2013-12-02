@@ -48,7 +48,6 @@ BuildRequires:  pkgconfig(wayland-client)
 BuildRequires:  pkgconfig(wayland-egl)
 BuildRequires:  pkgconfig(wayland-server)
 BuildRequires:  pkgconfig(xkbcommon) >= 0.3.0
-BuildRequires:  pkgconfig(glu) >= 9.0.0
 Requires(pre):  /usr/sbin/groupadd
 Requires(post): /usr/bin/pkg_initdb
 
@@ -83,7 +82,7 @@ with very little dependencies on other system components
 cp %{SOURCE1001} .
 
 %build
-%autogen --disable-static --disable-setuid-install  --enable-simple-clients --enable-clients --disable-libunwind --disable-xwayland --disable-xwayland-test
+%autogen --disable-static --disable-setuid-install  --enable-simple-clients --enable-clients --disable-libunwind --disable-xwayland --disable-xwayland-test --disable-x11-compositor --disable-rpi-compositor
 make %{?_smp_mflags};
 
 %install
