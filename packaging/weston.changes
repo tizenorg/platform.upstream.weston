@@ -1,3 +1,8 @@
+* Mon Dec 02 2013 Ossama Othman <ossama.othman@intel.com> accepted/tizen/20131127.212429@21af2d3
+- build failure fix (remove X dependencies)
+- This vfunc lets us read out a rectangle of pixels from the currently attached surface buffer.
+- Remove cairo-xcb dependency in spec file.
+
 * Fri Nov 22 2013 Ossama Othman <ossama.othman@intel.com> submit/tizen/20131122.063157@9f36b8a
 - Don't build xwayland and xwayland-test
 - Assign weston-launch to the User Smack domain.
