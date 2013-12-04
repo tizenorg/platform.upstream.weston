@@ -1,3 +1,4 @@
+%bcond_with mobile
 %define _unitdir_user /usr/lib/systemd/user
 
 Name:           weston
@@ -82,7 +83,11 @@ with very little dependencies on other system components
 cp %{SOURCE1001} .
 
 %build
+%if %{with mobile}
+%autogen --disable-static --disable-setuid-install  --enable-simple-clients --enable-clients --disable-libunwind --disable-xwayland --disable-xwayland-test --disable-x11-compositor --disable-rpi-compositor --disable-drm-compositor
+%else
 %autogen --disable-static --disable-setuid-install  --enable-simple-clients --enable-clients --disable-libunwind --disable-xwayland --disable-xwayland-test --disable-x11-compositor --disable-rpi-compositor
+%endif
 make %{?_smp_mflags};
 
 %install
