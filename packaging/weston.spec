@@ -50,7 +50,9 @@ BuildRequires:  pkgconfig(wayland-egl)
 BuildRequires:  pkgconfig(wayland-server)
 BuildRequires:  pkgconfig(xkbcommon) >= 0.3.0
 Requires(pre):  /usr/sbin/groupadd
+%if !%{with mobile}
 Requires(post): /usr/bin/pkg_initdb
+%endif
 
 %description
 Weston is the reference implementation of a Wayland compositor, and a
@@ -138,7 +140,9 @@ install -m 0644 %{SOURCE4} $RPM_BUILD_ROOT/%{_sysconfdir}/profile.d/
 getent group weston-launch >/dev/null || %{_sbindir}/groupadd -o -r weston-launch
 
 %post
+%if !%{with mobile}
 /usr/bin/pkg_initdb
+%endif
 
 %docs_package
 
