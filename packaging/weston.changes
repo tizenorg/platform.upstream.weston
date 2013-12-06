@@ -1,3 +1,6 @@
+* Tue Dec 10 2013 Ossama Othman <ossama.othman@intel.com> accepted/tizen/20131204.185237@e803629
+- v2:Fix [PTREL-522] Weston local build failed for X-Free repo.
+
 * Mon Dec 02 2013 Ossama Othman <ossama.othman@intel.com> accepted/tizen/20131127.212429@21af2d3
 - build failure fix (remove X dependencies)
 - This vfunc lets us read out a rectangle of pixels from the currently attached surface buffer.

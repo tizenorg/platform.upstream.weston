@@ -1,4 +1,9 @@
+%bcond_with mobile
 %define _unitdir_user /usr/lib/systemd/user
+
+%if %{with mobile}
+%define extra_config_options --disable-drm-compositor
+%endif
 
 Name:           weston
 Version:        1.3.1
@@ -82,7 +87,7 @@ with very little dependencies on other system components
 cp %{SOURCE1001} .
 
 %build
-%autogen --disable-static --disable-setuid-install  --enable-simple-clients --enable-clients --disable-libunwind --disable-xwayland --disable-xwayland-test --disable-x11-compositor --disable-rpi-compositor
+%autogen --disable-static --disable-setuid-install  --enable-simple-clients --enable-clients --disable-libunwind --disable-xwayland --disable-xwayland-test --disable-x11-compositor --disable-rpi-compositor %{?extra_config_options:%extra_config_options}
 make %{?_smp_mflags};
 
 %install
