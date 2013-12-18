@@ -54,7 +54,6 @@ BuildRequires:  pkgconfig(wayland-egl)
 BuildRequires:  pkgconfig(wayland-server)
 BuildRequires:  pkgconfig(xkbcommon) >= 0.3.0
 Requires(pre):  /usr/sbin/groupadd
-Requires(post): /usr/bin/pkg_initdb
 
 %description
 Weston is the reference implementation of a Wayland compositor, and a
@@ -73,14 +72,26 @@ as a X window manager.
 Summary: Development files for package %{name}
 Group:   Graphics & UI Framework/Development
 %description devel
-This package provides header files and other developer releated files for package %{name}.
+This package provides header files and other developer releated files
+for package %{name}.
 
 %package clients
 Summary: Sample clients for package %{name}
 Group:   Graphics & UI Framework/Development
 %description clients
-This package provides a set of example wayland clients useful for validating the functionality of wayland
-with very little dependencies on other system components
+This package provides a set of example wayland clients useful for
+validating the functionality of wayland with very little dependencies
+on other system components.
+
+%package meta-ivi
+Summary: IVI-specific files related to %{name}
+Group:   Automotive/Other
+Requires(post): /usr/bin/pkg_initdb
+%description meta-ivi
+This package contains Tizen IVI-specific files related to Weston.  It
+also contains application/package meta-data that is registered
+with the Tizen application framework, which allows the Tizen IVI
+homescreen to launch and display those applications.
 
 %prep
 %setup -q
@@ -93,11 +104,12 @@ make %{?_smp_mflags};
 %install
 %make_install
 
-# install tizen package metadata for weston-terminal
+# create tizen package metadata related directories
 mkdir -p %{buildroot}%{_datadir}/packages/
 mkdir -p %{buildroot}%{_datadir}/icons/default/small
+
+# install tizen package metadata for weston-terminal
 install -m 0644 %{SOURCE5} %{buildroot}%{_datadir}/packages/terminal.xml
-ln -sf %{_datadir}/weston/terminal.png %{buildroot}%{_datadir}/icons/default/small/
 
 # install browser package metadata for MiniBrowser
 install -m 0644 %{SOURCE6} %{buildroot}%{_datadir}/packages/browser.xml
@@ -137,8 +149,15 @@ install -m 0644 %{SOURCE4} $RPM_BUILD_ROOT/%{_sysconfdir}/profile.d/
 %pre
 getent group weston-launch >/dev/null || %{_sbindir}/groupadd -o -r weston-launch
 
-%post
+%post meta-ivi
+# This icon exists in main weston package so we don't package it in
+# the meta-ivi sub-package.  Create a symbolic link to it instead.
+ln -s %{_datadir}/weston/terminal.png %{_datadir}/icons/default/small/
 /usr/bin/pkg_initdb
+
+%postun meta-ivi
+/usr/bin/pkg_initdb
+rm -f %{_datadir}/icons/default/small/terminal.png
 
 %docs_package
 
@@ -158,10 +177,7 @@ getent group weston-launch >/dev/null || %{_sbindir}/groupadd -o -r weston-launc
 %{_unitdir_user}/weston.service
 %{_unitdir_user}/weston.target
 %{_unitdir_user}/weston.target.wants/weston.service
-%{_sysconfdir}/udev/rules.d/99-egalax.rules
 %{_sysconfdir}/profile.d/*
-%{_datadir}/packages/*.xml
-%{_datadir}/icons/default/small/*.png
 
 %files devel
 %manifest %{name}.manifest
@@ -184,5 +200,11 @@ getent group weston-launch >/dev/null || %{_sbindir}/groupadd -o -r weston-launc
 %_bindir/weston-transformed
 %_bindir/weston-fullscreen
 %_bindir/weston-calibrator
+
+%files meta-ivi
+%manifest %{name}.manifest
+%{_sysconfdir}/udev/rules.d/99-egalax.rules
+%{_datadir}/packages/*.xml
+%{_datadir}/icons/default/small/*.png
 
 %changelog
