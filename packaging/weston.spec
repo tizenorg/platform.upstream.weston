@@ -1,3 +1,4 @@
+%bcond_with wayland
 %bcond_with mobile
 %define _unitdir_user /usr/lib/systemd/user
 
@@ -54,6 +55,11 @@ BuildRequires:  pkgconfig(wayland-egl)
 BuildRequires:  pkgconfig(wayland-server)
 BuildRequires:  pkgconfig(xkbcommon) >= 0.3.0
 Requires(pre):  /usr/sbin/groupadd
+
+%if !%{with wayland}
+ExclusiveArch:
+%endif
+
 
 %description
 Weston is the reference implementation of a Wayland compositor, and a
