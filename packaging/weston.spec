@@ -16,15 +16,7 @@ Url:            http://weston.freedesktop.org/
 #Git-Clone:	git://anongit.freedesktop.org/wayland/weston
 #Git-Web:	http://cgit.freedesktop.org/wayland/weston/
 Source0:         %name-%version.tar.xz
-Source1:        weston.service
-Source2:        weston.target
-Source3:        99-egalax.rules
-Source4:        weston.sh
-Source5:        terminal.xml
-Source6:        browser.xml
-Source7:        browser.png
-Source8:        browser
-Source9:        weekeyboard.xml
+Source1:        weston.target
 Source1001: 	weston.manifest
 BuildRequires:	autoconf >= 2.64, automake >= 1.11
 BuildRequires:  expat-devel
@@ -53,6 +45,7 @@ BuildRequires:  pkgconfig(wayland-client)
 BuildRequires:  pkgconfig(wayland-egl)
 BuildRequires:  pkgconfig(wayland-server)
 BuildRequires:  pkgconfig(xkbcommon) >= 0.3.0
+Requires:       weston-startup
 Requires(pre):  /usr/sbin/groupadd
 
 %description
@@ -83,41 +76,16 @@ This package provides a set of example wayland clients useful for
 validating the functionality of wayland with very little dependencies
 on other system components.
 
-%package meta-ivi
-Summary: IVI-specific files related to %{name}
-Group:   Automotive/Other
-Requires(post): /usr/bin/pkg_initdb
-%description meta-ivi
-This package contains Tizen IVI-specific files related to Weston.  It
-also contains application/package meta-data that is registered
-with the Tizen application framework, which allows the Tizen IVI
-homescreen to launch and display those applications.
-
 %prep
 %setup -q
 cp %{SOURCE1001} .
 
 %build
 %autogen --disable-static --disable-setuid-install  --enable-simple-clients --enable-clients --disable-libunwind --disable-xwayland --disable-xwayland-test --disable-x11-compositor --disable-rpi-compositor %{?extra_config_options:%extra_config_options}
-make %{?_smp_mflags};
+make %{?_smp_mflags}
 
 %install
 %make_install
-
-# create tizen package metadata related directories
-mkdir -p %{buildroot}%{_datadir}/packages/
-mkdir -p %{buildroot}%{_datadir}/icons/default/small
-
-# install tizen package metadata for weston-terminal
-install -m 0644 %{SOURCE5} %{buildroot}%{_datadir}/packages/terminal.xml
-
-# install browser package metadata for MiniBrowser
-install -m 0644 %{SOURCE6} %{buildroot}%{_datadir}/packages/browser.xml
-cp %{SOURCE7} %{buildroot}%{_datadir}/icons/default/small/
-install -m 755 %{SOURCE8} %{buildroot}%{_bindir}/browser
-
-# install tizen package metadata for weekeyboard
-install -m 0644 %{SOURCE9} %{buildroot}%{_datadir}/packages/weekeyboard.xml
 
 # install example clients
 install -m 755 clients/weston-simple-touch %{buildroot}%{_bindir}
@@ -135,29 +103,13 @@ install -m 755 clients/weston-transformed %{buildroot}%{_bindir}
 install -m 755 clients/weston-fullscreen %{buildroot}%{_bindir}
 install -m 755 clients/weston-calibrator %{buildroot}%{_bindir}
 
-install -d %{buildroot}/%{_unitdir_user}/weston.target.wants
-install -m 644 %{SOURCE1} %{buildroot}%{_unitdir_user}/weston.service
-install -m 644 %{SOURCE2} %{buildroot}%{_unitdir_user}/weston.target
-ln -sf ../weston.service %{buildroot}/%{_unitdir_user}/weston.target.wants/
-
-mkdir -p $RPM_BUILD_ROOT/%{_sysconfdir}/udev/rules.d/
-install -m 0644 %{SOURCE3} $RPM_BUILD_ROOT/%{_sysconfdir}/udev/rules.d/
-
-mkdir -p $RPM_BUILD_ROOT/%{_sysconfdir}/profile.d/
-install -m 0644 %{SOURCE4} $RPM_BUILD_ROOT/%{_sysconfdir}/profile.d/
+install -d %{buildroot}%{_unitdir_user}
+install -m 644 %{SOURCE1} %{buildroot}%{_unitdir_user}/weston.target
+# The weston.service unit file must be provided by the weston-startup
+# virtual package.
 
 %pre
 getent group weston-launch >/dev/null || %{_sbindir}/groupadd -o -r weston-launch
-
-%post meta-ivi
-# This icon exists in main weston package so we don't package it in
-# the meta-ivi sub-package.  Create a symbolic link to it instead.
-ln -s %{_datadir}/weston/terminal.png %{_datadir}/icons/default/small/
-/usr/bin/pkg_initdb
-
-%postun meta-ivi
-/usr/bin/pkg_initdb
-rm -f %{_datadir}/icons/default/small/terminal.png
 
 %docs_package
 
@@ -168,16 +120,12 @@ rm -f %{_datadir}/icons/default/small/terminal.png
 %_bindir/wcap-*
 %_bindir/weston
 %_bindir/weston-info
-%_bindir/browser
 %attr(4755,root,root) %{_bindir}/weston-launch
 %{_bindir}/weston-terminal
 %_libexecdir/weston-*
 %_libdir/weston
 %_datadir/weston
-%{_unitdir_user}/weston.service
 %{_unitdir_user}/weston.target
-%{_unitdir_user}/weston.target.wants/weston.service
-%{_sysconfdir}/profile.d/*
 
 %files devel
 %manifest %{name}.manifest
@@ -200,11 +148,5 @@ rm -f %{_datadir}/icons/default/small/terminal.png
 %_bindir/weston-transformed
 %_bindir/weston-fullscreen
 %_bindir/weston-calibrator
-
-%files meta-ivi
-%manifest %{name}.manifest
-%{_sysconfdir}/udev/rules.d/99-egalax.rules
-%{_datadir}/packages/*.xml
-%{_datadir}/icons/default/small/*.png
 
 %changelog
