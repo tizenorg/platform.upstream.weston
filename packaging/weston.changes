@@ -1,3 +1,8 @@
+* Tue Jan 21 2014 Ossama Othman <ossama.othman@intel.com> accepted/tizen/generic/20140106.132549@36d486f
+- Clarified comment about weston-startup virtual package rationale.
+- weston-launch SMACK exec label is now set in weston systemd unit file.
+- [TIVI-2213] Moved IVI files to weston-ivi and ico-uxf-homescreen-sample-apps.
+
 * Tue Dec 10 2013 Ossama Othman <ossama.othman@intel.com> accepted/tizen/20131204.185237@e803629
 - v2:Fix [PTREL-522] Weston local build failed for X-Free repo.
 
