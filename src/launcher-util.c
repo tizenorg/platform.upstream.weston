@@ -40,7 +40,7 @@
 #include <linux/kd.h>
 #include <linux/major.h>
 
-#ifdef BUILD_DRM_COMPOSITOR
+#ifdef ENABLE_DRM_COMPOSITOR
 #include <xf86drm.h>
 #endif
 
@@ -65,7 +65,7 @@ struct weston_launcher {
 	struct wl_event_source *vt_source;
 };
 
-#ifdef BUILD_DRM_COMPOSITOR
+#ifdef ENABLE_DRM_COMPOSITOR
 static int
 drm_drop_master(int drm_fd)
 {
