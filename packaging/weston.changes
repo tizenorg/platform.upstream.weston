@@ -1,3 +1,6 @@
+* Mon Feb 24 2014 Ossama Othman <ossama.othman@intel.com> accepted/tizen/generic/20140217.130354@13640d5
+- This vfunc lets us read out a rectangle of pixels from the currently attached surface buffer.
+
 * Wed Feb 12 2014 Ossama Othman <ossama.othman@intel.com> 1.4.0@d601bc0
 - Update to 1.4.0
 
