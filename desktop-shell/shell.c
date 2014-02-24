@@ -85,7 +85,7 @@ struct ping_timer {
  *  • Lock layer (only ever displayed on its own)
  *  • Cursor layer
  *  • Fullscreen layer
- *  • Panel layer
+ *  • Panel layer - Taskbar layer
  *  • Input panel layer
  *  • Workspace layers
  *  • Background layer
@@ -3670,6 +3670,53 @@ desktop_shell_set_panel(struct wl_client *client,
 }
 
 static void
+taskbar_configure(struct weston_surface *es, int32_t sx, int32_t sy)
+{
+	struct desktop_shell *shell = es->configure_private;
+	struct weston_view *view;
+
+	view = container_of(es->views.next, struct weston_view, surface_link);
+
+	configure_static_view(view, &shell->taskbar_layer);
+
+	weston_view_set_position(view, view->output->x, view->output->height
+	                                              - view->surface->height);
+}
+
+static void
+desktop_shell_set_taskbar(struct wl_client *client,
+			       struct wl_resource *resource,
+			       struct wl_resource *output_resource,
+			       struct wl_resource *surface_resource)
+{
+	struct desktop_shell *shell = wl_resource_get_user_data(resource);
+	struct weston_surface *surface =
+		wl_resource_get_user_data(surface_resource);
+	struct weston_view *view, *next;
+
+	if (surface->configure) {
+		wl_resource_post_error(surface_resource,
+				       WL_DISPLAY_ERROR_INVALID_OBJECT,
+				       "surface role already assigned");
+		return;
+	}
+
+	wl_list_for_each_safe(view, next, &surface->views, surface_link)
+		weston_view_destroy(view);
+	view = weston_view_create(surface);
+
+	/* send post-creation configure request to desktop-shell taskbar */
+	surface->configure = taskbar_configure;
+	surface->configure_private = shell;
+	surface->output = wl_resource_get_user_data(output_resource);
+	view->output = surface->output;
+	desktop_shell_send_configure(resource, 0,
+				     surface_resource,
+				     surface->output->width,
+				     surface->output->height);
+}
+
+static void
 lock_surface_configure(struct weston_surface *surface, int32_t sx, int32_t sy)
 {
 	struct desktop_shell *shell = surface->configure_private;
@@ -3736,7 +3783,9 @@ resume_desktop(struct desktop_shell *shell)
 	wl_list_insert(&shell->compositor->cursor_layer.link,
 		       &shell->fullscreen_layer.link);
 	wl_list_insert(&shell->fullscreen_layer.link,
-		       &shell->panel_layer.link);
+		       &shell->taskbar_layer.link);
+	wl_list_insert(&shell->taskbar_layer.link,
+ 		       &shell->panel_layer.link);
 	if (shell->showing_input_panels) {
 		wl_list_insert(&shell->panel_layer.link,
 			       &shell->input_panel_layer.link);
@@ -3788,6 +3837,7 @@ desktop_shell_desktop_ready(struct wl_client *client,
 static const struct desktop_shell_interface desktop_shell_implementation = {
 	desktop_shell_set_background,
 	desktop_shell_set_panel,
+	desktop_shell_set_taskbar,
 	desktop_shell_set_lock_surface,
 	desktop_shell_unlock,
 	desktop_shell_set_grab_surface,
@@ -4335,6 +4385,7 @@ lock(struct desktop_shell *shell)
 	 * input events while we are locked. */
 
 	wl_list_remove(&shell->panel_layer.link);
+	wl_list_remove(&shell->taskbar_layer.link);
 	wl_list_remove(&shell->fullscreen_layer.link);
 	if (shell->showing_input_panels)
 		wl_list_remove(&shell->input_panel_layer.link);
@@ -5646,7 +5697,8 @@ module_init(struct weston_compositor *ec,
 	ec->shell_interface.set_title = set_title;
 
 	weston_layer_init(&shell->fullscreen_layer, &ec->cursor_layer.link);
-	weston_layer_init(&shell->panel_layer, &shell->fullscreen_layer.link);
+	weston_layer_init(&shell->taskbar_layer, &shell->fullscreen_layer.link);
+	weston_layer_init(&shell->panel_layer, &shell->taskbar_layer.link);
 	weston_layer_init(&shell->background_layer, &shell->panel_layer.link);
 	weston_layer_init(&shell->lock_layer, NULL);
 	weston_layer_init(&shell->input_panel_layer, NULL);
