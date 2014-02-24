@@ -5204,7 +5204,6 @@ bind_screensaver(struct wl_client *client,
 		shell->screensaver.binding = resource;
 		return;
 	}
-
 	wl_resource_post_error(resource, WL_DISPLAY_ERROR_INVALID_OBJECT,
 			       "interface object already bound");
 	wl_resource_destroy(resource);
@@ -5215,6 +5214,7 @@ struct switcher {
 	struct weston_surface *current;
 	struct wl_listener listener;
 	struct weston_keyboard_grab grab;
+	struct wl_array minimized_array;
 };
 
 static void
@@ -5224,6 +5224,16 @@ switcher_next(struct switcher *switcher)
 	struct weston_surface *first = NULL, *prev = NULL, *next = NULL;
 	struct shell_surface *shsurf;
 	struct workspace *ws = get_current_workspace(switcher->shell);
+
+	 /* temporary re-display minimized surfaces */
+	struct weston_view *tmp;
+	struct weston_view **minimized;
+	wl_list_for_each_safe(view, tmp, &switcher->shell->minimized_layer.view_list, layer_link) {
+		wl_list_remove(&view->layer_link);
+		wl_list_insert(&ws->layer.view_list, &view->layer_link);
+		minimized = wl_array_add(&switcher->minimized_array, sizeof *minimized);
+		*minimized = view;
+	}
 
 	wl_list_for_each(view, &ws->layer.view_list, layer_link) {
 		shsurf = get_shell_surface(view->surface);
@@ -5296,6 +5306,25 @@ switcher_destroy(struct switcher *switcher)
 	weston_keyboard_end_grab(keyboard);
 	if (keyboard->input_method_resource)
 		keyboard->grab = &keyboard->input_method_grab;
+
+	 /* re-hide surfaces that were temporary shown during the switch */
+	struct weston_view **minimized;
+	wl_array_for_each(minimized, &switcher->minimized_array) {
+		/* with the exception of the current selected */
+		if ((*minimized)->surface == switcher->current) {
+			struct managed_surface *surface;
+			wl_list_for_each(surface, &switcher->shell->managed_surfaces_list, link) {
+				if (surface->surface == (*minimized)->surface)
+					managed_surface_send_state_changed (surface->resource, 0);
+			}
+		} else {
+			wl_list_remove(&(*minimized)->layer_link);
+			wl_list_insert(&switcher->shell->minimized_layer.view_list, &(*minimized)->layer_link);
+			weston_view_damage_below(*minimized);
+		}
+	}
+	wl_array_release(&switcher->minimized_array);
+
 	free(switcher);
 }
 
@@ -5348,6 +5377,7 @@ switcher_binding(struct weston_seat *seat, uint32_t time, uint32_t key,
 	switcher->current = NULL;
 	switcher->listener.notify = switcher_handle_surface_destroy;
 	wl_list_init(&switcher->listener.link);
+	wl_array_init(&switcher->minimized_array);
 
 	restore_all_output_modes(shell->compositor);
 	lower_fullscreen_layer(switcher->shell);
