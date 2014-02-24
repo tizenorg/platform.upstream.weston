@@ -191,6 +191,7 @@ struct desktop_shell {
 	enum animation_type focus_animation_type;
 
 	struct wl_list managed_surfaces_list;
+	struct weston_layer minimized_layer;
 
 	struct wl_listener output_create_listener;
 	struct wl_list output_list;
