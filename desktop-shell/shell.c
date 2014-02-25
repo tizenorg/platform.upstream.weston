@@ -2420,6 +2420,7 @@ static void
 set_maximized(struct shell_surface *shsurf,
               struct weston_output *output)
 {
+weston_log ("SET_MAXIMIZED\n");
 	struct desktop_shell *shell;
 	uint32_t edges = 0, panel_height = 0, taskbar_height = 0;
 
@@ -2524,7 +2525,7 @@ set_surface_type(struct shell_surface *shsurf)
 
 	switch (shsurf->type) {
 	case SHELL_SURFACE_TOPLEVEL:
-		if (shsurf->state.maximized || shsurf->state.fullscreen) {
+		if (shsurf->state.fullscreen) {
 			set_full_output(shsurf);
 		} else if (shsurf->state.relative && pev) {
 			weston_view_set_position(shsurf->view,
@@ -3309,8 +3310,15 @@ xdg_surface_set_maximized(struct wl_client *client,
 	if (shsurf->type != SHELL_SURFACE_TOPLEVEL)
 		return;
 
-	if (!shsurf->next_state.maximized)
+	if (!shsurf->next_state.maximized) {
+		shsurf->saved_x = shsurf->view->geometry.x;
+		shsurf->saved_y = shsurf->view->geometry.y;
+		shsurf->saved_width = shsurf->surface->width;
+		shsurf->saved_height = shsurf->surface->height;
+		shsurf->saved_size_valid = true;
+		shsurf->saved_position_valid = true;
 		set_maximized(shsurf, NULL);
+	}
 }
 
 static void
@@ -3343,7 +3351,7 @@ xdg_surface_unset_maximized(struct wl_client *client,
 
 static void
 xdg_surface_set_minimized(struct wl_client *client,
-			    struct wl_resource *resource)
+			  struct wl_resource *resource)
 {
 	struct shell_surface *shsurf = wl_resource_get_user_data(resource);
 
@@ -3428,14 +3436,19 @@ xdg_get_xdg_surface(struct wl_client *client,
 	struct desktop_shell *shell = wl_resource_get_user_data(resource);
 	struct shell_surface *shsurf;
 
-	shsurf = get_shell_surface(surface);
-	if (!shsurf)
-		shsurf = create_xdg_surface(shell, surface, &xdg_client);
+	if (get_shell_surface(surface)) {
+		wl_resource_post_error(surface_resource,
+			               WL_DISPLAY_ERROR_INVALID_OBJECT,
+			               "desktop_shell::get_shell_surface already requested");
 
+		return;
+	}
+
+	shsurf = create_xdg_surface(shell, surface, &xdg_client);
 	if (!shsurf) {
 		wl_resource_post_error(surface_resource,
-				       WL_DISPLAY_ERROR_INVALID_OBJECT,
-				       "desktop_shell::get_shell_surface already requested");
+			               WL_DISPLAY_ERROR_INVALID_OBJECT,
+			               "surface->configure already set");
 		return;
 	}
 

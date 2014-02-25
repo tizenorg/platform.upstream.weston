@@ -286,8 +286,6 @@ int main(int argc, char *argv[])
 		window_add_widget(transformed.window, &transformed);
 
 	window_set_title(transformed.window, "Transformed");
-	window_set_fullscreen_method(transformed.window,
-				     transformed.fullscreen_method);
 
 	widget_set_transparent(transformed.widget, 0);
 	widget_set_default_cursor(transformed.widget, CURSOR_BLANK);
