@@ -1,3 +1,9 @@
+* Wed Mar 05 2014 Ossama Othman <ossama.othman@intel.com> accepted/tizen/mobile/20140227.071827@0aaa2e4
+- toytoolkit: totally switch to xdg-shell protocol
+- compositor: use Mod-Tab to show/raise minimized surfaces
+- compositor: implement xdg_surface_set_minimized()
+- This vfunc lets us read out a rectangle of pixels from the currently attached surface buffer.
+
 * Wed Feb 12 2014 Ossama Othman <ossama.othman@intel.com> 1.4.0@d601bc0
 - Update to 1.4.0
 
