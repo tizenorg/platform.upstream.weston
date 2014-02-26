@@ -222,13 +222,6 @@ key_handler(struct window *window, struct input *input, uint32_t time,
 				       fullscreen->width, fullscreen->height);
 		break;
 
-	case XKB_KEY_m:
-		fullscreen->fullscreen_method = (fullscreen->fullscreen_method + 1) % 4;
-		window_set_fullscreen_method(fullscreen->window,
-					     fullscreen->fullscreen_method);
-		window_schedule_redraw(window);
-		break;
-
 	case XKB_KEY_f:
 		fullscreen->fullscreen ^= 1;
 		window_set_fullscreen(window, fullscreen->fullscreen);
@@ -338,8 +331,6 @@ int main(int argc, char *argv[])
 		window_add_widget(fullscreen.window, &fullscreen);
 
 	window_set_title(fullscreen.window, "Fullscreen");
-	window_set_fullscreen_method(fullscreen.window,
-				     fullscreen.fullscreen_method);
 
 	widget_set_transparent(fullscreen.widget, 0);
 	widget_set_default_cursor(fullscreen.widget, CURSOR_LEFT_PTR);

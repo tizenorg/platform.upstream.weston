@@ -2492,7 +2492,7 @@ set_surface_type(struct shell_surface *shsurf)
 
 	switch (shsurf->type) {
 	case SHELL_SURFACE_TOPLEVEL:
-		if (shsurf->state.maximized || shsurf->state.fullscreen) {
+		if (shsurf->state.fullscreen) {
 			set_full_output(shsurf);
 		} else if (shsurf->state.relative && pev) {
 			weston_view_set_position(shsurf->view,
@@ -3266,8 +3266,15 @@ xdg_surface_set_maximized(struct wl_client *client,
 	if (shsurf->type != SHELL_SURFACE_TOPLEVEL)
 		return;
 
-	if (!shsurf->next_state.maximized)
+	if (!shsurf->next_state.maximized) {
+		shsurf->saved_x = shsurf->view->geometry.x;
+		shsurf->saved_y = shsurf->view->geometry.y;
+		shsurf->saved_width = shsurf->surface->width;
+		shsurf->saved_height = shsurf->surface->height;
+		shsurf->saved_size_valid = true;
+		shsurf->saved_position_valid = true;
 		set_maximized(shsurf, NULL);
+	}
 }
 
 static void
