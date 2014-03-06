@@ -27,6 +27,7 @@ BuildRequires:  libvpx-devel
 BuildRequires:  pam-devel
 BuildRequires:  pkgconfig
 BuildRequires:  xz
+BuildRequires:  pkgconfig(pangocairo)
 BuildRequires:  pkgconfig(cairo)
 BuildRequires:  pkgconfig(cairo-egl) >= 1.11.3
 BuildRequires:  pkgconfig(egl) >= 7.10
@@ -101,10 +102,12 @@ install -m 755 clients/weston-flower %{buildroot}%{_bindir}
 install -m 755 clients/weston-image %{buildroot}%{_bindir}
 install -m 755 clients/weston-cliptest %{buildroot}%{_bindir}
 install -m 755 clients/weston-dnd %{buildroot}%{_bindir}
+install -m 755 clients/weston-editor %{buildroot}%{_bindir}
 install -m 755 clients/weston-smoke %{buildroot}%{_bindir}
 install -m 755 clients/weston-resizor %{buildroot}%{_bindir}
 install -m 755 clients/weston-eventdemo %{buildroot}%{_bindir}
 install -m 755 clients/weston-clickdot %{buildroot}%{_bindir}
+install -m 755 clients/weston-subsurfaces %{buildroot}%{_bindir}
 install -m 755 clients/weston-transformed %{buildroot}%{_bindir}
 install -m 755 clients/weston-fullscreen %{buildroot}%{_bindir}
 install -m 755 clients/weston-calibrator %{buildroot}%{_bindir}
@@ -153,10 +156,12 @@ getent group weston-launch >/dev/null || %{_sbindir}/groupadd -o -r weston-launc
 %_bindir/weston-image
 %_bindir/weston-cliptest
 %_bindir/weston-dnd
+%_bindir/weston-editor
 %_bindir/weston-smoke
 %_bindir/weston-resizor
 %_bindir/weston-eventdemo
 %_bindir/weston-clickdot
+%_bindir/weston-subsurfaces
 %_bindir/weston-transformed
 %_bindir/weston-fullscreen
 %_bindir/weston-calibrator
