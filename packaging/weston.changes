@@ -1,3 +1,7 @@
+* Fri Mar 07 2014 Ossama Othman <ossama.othman@intel.com> accepted/tizen/mobile/20140306.215156@0a8cc4e
+- shell: position input panel layer above fullscreen layer
+- packaging: add weston-editor & weston-subsurfaces clients.
+
 * Wed Mar 05 2014 Ossama Othman <ossama.othman@intel.com> accepted/tizen/mobile/20140227.071827@0aaa2e4
 - toytoolkit: totally switch to xdg-shell protocol
 - compositor: use Mod-Tab to show/raise minimized surfaces
