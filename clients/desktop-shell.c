@@ -115,6 +115,9 @@ struct background {
 	char *image;
 	int type;
 	uint32_t color;
+
+	char *username;
+	struct wl_list link;
 };
 
 struct output {
@@ -127,6 +130,7 @@ struct output {
 	struct taskbar *taskbar;
 	struct wl_list taskbars;
 	struct background *background;
+	struct wl_list backgrounds;
 };
 
 struct panel_launcher {
@@ -189,6 +193,9 @@ panel_add_launchers(struct panel *panel, struct desktop *desktop);
 
 static cairo_surface_t *
 load_icon_or_fallback(const char *icon);
+
+static struct background *
+background_create(struct desktop *desktop);
 
 static void
 sigchild_handler(int s)
@@ -1640,11 +1647,13 @@ desktop_shell_user_switched(void *data,
 	struct output *output;
 	struct panel *panel;
 	struct taskbar *taskbar;
+	struct background *background;
 	struct wl_surface *surface;
 
 	desktop->current_user = strdup(username);
 	int panel_exists = 0;
 	int taskbar_exists = 0;
+	int background_exists = 0;
 
 	wl_list_for_each(output, &desktop->outputs, link) {
 		wl_list_for_each(panel, &output->panels, link) {
@@ -1676,6 +1685,21 @@ desktop_shell_user_switched(void *data,
 			desktop_shell_set_taskbar(desktop->shell, output->output, surface);
 		}
 		taskbar_exists = 0;
+
+		wl_list_for_each(background, &output->backgrounds, link) {
+			if (strcmp(background->username, username) == 0) {
+				background_exists = 1;
+				surface = window_get_wl_surface(background->window);
+				desktop_shell_set_background(desktop->shell, output->output, surface);
+			}
+		}
+		if (!background_exists) {
+			output->background = background_create(desktop);
+			wl_list_insert(&output->backgrounds, &output->background->link);
+			surface = window_get_wl_surface(output->background->window);
+			desktop_shell_set_background(desktop->shell, output->output, surface);
+		}
+		background_exists = 0;
 	}
 
 	display_defer(desktop->display, &desktop->unlock_task);
@@ -1764,6 +1788,7 @@ background_destroy(struct background *background)
 	window_destroy(background->window);
 
 	free(background->image);
+	free(background->username);
 	free(background);
 }
 
@@ -1772,6 +1797,8 @@ background_create(struct desktop *desktop)
 {
 	struct background *background;
 	struct weston_config_section *s;
+	char *user_background_image;
+	char *user_background_color;
 	char *type;
 
 	background = xzalloc(sizeof *background);
@@ -1783,12 +1810,28 @@ background_create(struct desktop *desktop)
 	window_set_preferred_format(background->window,
 				    WINDOW_PREFERRED_FORMAT_RGB565);
 
+	background->username = strdup(desktop->current_user);
+	asprintf(&user_background_image, "background-image-%s", background->username);
+	asprintf(&user_background_color, "background-color-%s", background->username);
+
 	s = weston_config_get_section(desktop->config, "shell", NULL, NULL);
-	weston_config_section_get_string(s, "background-image",
+
+	weston_config_section_get_string(s, user_background_image,
 					 &background->image,
 					 DATADIR "/weston/pattern.png");
-	weston_config_section_get_uint(s, "background-color",
-				       &background->color, 0xff002244);
+	if (strcmp(background->image, DATADIR "/weston/pattern.png") == 0)
+		weston_config_section_get_string(s, "background-image",
+						 &background->image,
+						 DATADIR "/weston/pattern.png");
+
+	weston_config_section_get_uint(s, user_background_color,
+					 &background->color, 0xff002244);
+	if (background->color == 0xff002244)
+		weston_config_section_get_uint(s, "background-color",
+					       &background->color, 0xff002244);
+
+	free(user_background_image);
+	free(user_background_color);
 
 	weston_config_section_get_string(s, "background-type",
 					 &type, "tile");
@@ -1933,6 +1976,7 @@ output_init(struct output *output, struct desktop *desktop)
 
 	wl_list_init(&output->panels);
 	wl_list_init(&output->taskbars);
+	wl_list_init(&output->backgrounds);
 
 	output->panel = panel_create(desktop);
 	wl_list_insert(&output->panels, &output->panel->link);
@@ -1947,6 +1991,7 @@ output_init(struct output *output, struct desktop *desktop)
 				  output->output, surface);
 
 	output->background = background_create(desktop);
+	wl_list_insert(&output->backgrounds, &output->background->link);
 	surface = window_get_wl_surface(output->background->window);
 	desktop_shell_set_background(desktop->shell,
 				     output->output, surface);
