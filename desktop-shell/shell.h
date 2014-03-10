@@ -75,6 +75,7 @@ struct workspace {
 	struct weston_view_animation *focus_animation;
 
 	char *username;
+	struct weston_layer minimized_layer;
 };
 
 struct desktop_shell {

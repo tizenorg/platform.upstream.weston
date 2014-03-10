@@ -831,6 +831,7 @@ workspace_create(void)
 		return NULL;
 
 	weston_layer_init(&ws->layer, NULL);
+	weston_layer_init(&ws->minimized_layer, NULL);
 
 	wl_list_init(&ws->focus_list);
 	wl_list_init(&ws->seat_destroyed_listener.link);
@@ -2383,6 +2384,7 @@ set_minimized(struct weston_surface *surface, uint32_t is_true)
 	struct weston_seat *seat;
 	struct weston_surface *focus;
 	struct weston_view *view;
+	struct workspace **cuws;
 
 	view = get_default_view(surface);
 	if (!view)
@@ -2393,10 +2395,16 @@ set_minimized(struct weston_surface *surface, uint32_t is_true)
 	shsurf = get_shell_surface(surface);
 	current_ws = get_current_workspace(shsurf->shell);
 
+
 	wl_list_remove(&view->layer_link);
 	 /* hide or show, depending on the state */
 	if (is_true) {
-		wl_list_insert(&shsurf->shell->minimized_layer.view_list, &view->layer_link);
+		wl_array_for_each(cuws, &shsurf->shell->workspaces.array) {
+			if (strcmp((*cuws)->username, shsurf->shell->current_user) == 0) {
+				wl_list_insert(&(*cuws)->minimized_layer.view_list, &view->layer_link);
+				break;
+			}				
+		}
 
 		drop_focus_state(shsurf->shell, current_ws, view->surface);
 		wl_list_for_each(seat, &shsurf->shell->compositor->seat_list, link) {
@@ -2406,9 +2414,13 @@ set_minimized(struct weston_surface *surface, uint32_t is_true)
 			if (focus == view->surface)
 				weston_keyboard_set_focus(seat->keyboard, NULL);
 		}
-	}
-	else {
-		wl_list_insert(&current_ws->layer.view_list, &view->layer_link);
+	} else {
+		wl_array_for_each(cuws, &shsurf->shell->workspaces.array) {
+			if (strcmp((*cuws)->username, shsurf->shell->current_user) == 0) {
+				wl_list_insert(&(*cuws)->layer.view_list, &view->layer_link);
+				break;
+			}			
+		}
 
 		wl_list_for_each(seat, &shsurf->shell->compositor->seat_list, link) {
 			if (!seat->keyboard)
@@ -5317,16 +5329,25 @@ switcher_next(struct switcher *switcher)
 	struct weston_view *view;
 	struct weston_surface *first = NULL, *prev = NULL, *next = NULL;
 	struct shell_surface *shsurf;
-	struct workspace *ws = get_current_workspace(switcher->shell);
+	struct desktop_shell *shell = switcher->shell;
+	struct workspace *ws = get_current_workspace(shell);
 
 	 /* temporary re-display minimized surfaces */
 	struct weston_view *tmp;
 	struct weston_view **minimized;
-	wl_list_for_each_safe(view, tmp, &switcher->shell->minimized_layer.view_list, layer_link) {
-		wl_list_remove(&view->layer_link);
-		wl_list_insert(&ws->layer.view_list, &view->layer_link);
-		minimized = wl_array_add(&switcher->minimized_array, sizeof *minimized);
-		*minimized = view;
+	struct workspace **cuws;
+	wl_array_for_each(cuws, &shell->workspaces.array) {
+		if ((*cuws)->username) {
+			if (strcmp((*cuws)->username, shell->current_user) == 0) {
+				wl_list_for_each_safe(view, tmp, &(*cuws)->minimized_layer.view_list, layer_link) {
+					wl_list_remove(&view->layer_link);
+					wl_list_insert(&(*cuws)->layer.view_list, &view->layer_link);
+					minimized = wl_array_add(&switcher->minimized_array, sizeof *minimized);
+					*minimized = view;
+				}
+				break;
+			}
+		}
 	}
 
 	wl_list_for_each(view, &ws->layer.view_list, layer_link) {
@@ -5383,7 +5404,9 @@ switcher_destroy(struct switcher *switcher)
 {
 	struct weston_view *view;
 	struct weston_keyboard *keyboard = switcher->grab.keyboard;
-	struct workspace *ws = get_current_workspace(switcher->shell);
+	struct desktop_shell *shell = switcher->shell;
+	struct workspace *ws = get_current_workspace(shell);
+	struct workspace **cuws;
 
 	wl_list_for_each(view, &ws->layer.view_list, layer_link) {
 		if (is_focus_view(view))
@@ -5412,9 +5435,16 @@ switcher_destroy(struct switcher *switcher)
 					managed_surface_send_state_changed (surface->resource, 0);
 			}
 		} else {
-			wl_list_remove(&(*minimized)->layer_link);
-			wl_list_insert(&switcher->shell->minimized_layer.view_list, &(*minimized)->layer_link);
-			weston_view_damage_below(*minimized);
+			wl_array_for_each(cuws, &shell->workspaces.array) {
+				if ((*cuws)->username) {
+					if (strcmp((*cuws)->username, shell->current_user) == 0) {
+						wl_list_remove(&(*minimized)->layer_link);
+						wl_list_insert(&(*cuws)->minimized_layer.view_list, &	(*minimized)->layer_link);
+						weston_view_damage_below(*minimized);
+						break;
+					}
+				}
+			}
 		}
 	}
 	wl_array_release(&switcher->minimized_array);
