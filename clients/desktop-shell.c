@@ -47,6 +47,8 @@
 
 #include "desktop-shell-client-protocol.h"
 
+#include <pwd.h>
+
 extern char **environ; /* defined by libc */
 
 struct desktop {
@@ -152,6 +154,16 @@ struct unlock_dialog {
 	int button_focused;
 	int closing;
 	struct desktop *desktop;
+	struct wl_list user_list;
+};
+
+struct user_entry {
+	struct widget *widget;
+	struct unlock_dialog *dialog;
+	cairo_surface_t *icon;
+	int focused, pressed;
+	char *name;
+	struct wl_list link;
 };
 
 static void
@@ -939,6 +951,106 @@ taskbar_add_handler(struct taskbar *taskbar,
 	                             taskbar->desktop);
 }
 
+static int
+user_entry_enter_handler(struct widget *widget, struct input *input,
+			 float x, float y, void *data)
+{
+	struct user_entry *entry = data;
+
+	entry->focused = 1;
+	widget_schedule_redraw(widget);
+
+	return CURSOR_LEFT_PTR;
+}
+
+static void
+user_entry_leave_handler(struct widget *widget,
+			 struct input *input, void *data)
+{
+	struct user_entry *entry = data;
+
+	entry->focused = 0;
+	/* no tooltip yet... */
+	/* widget_destroy_tooltip(widget); */
+	widget_schedule_redraw(widget);
+}
+
+static void
+user_entry_button_handler(struct widget *widget,
+			  struct input *input, uint32_t time,
+			  uint32_t button,
+			  enum wl_pointer_button_state state, void *data)
+{
+	struct user_entry *entry = widget_get_user_data(widget);
+	struct desktop *desktop = entry->dialog->desktop;
+
+	if (button == BTN_LEFT) {
+		if (state == WL_POINTER_BUTTON_STATE_RELEASED) {
+			fprintf(stderr, "Clicked on user %s\n", entry->name);
+			display_defer(desktop->display, &desktop->unlock_task);
+		}
+	}
+
+	widget_schedule_redraw(widget);
+}
+
+static void
+user_entry_redraw_handler(struct widget *widget, void *data)
+{
+	struct user_entry *entry = data;
+	struct rectangle allocation;
+	cairo_t *cr;
+
+	cr = widget_cairo_create(entry->dialog->widget);
+
+	widget_get_allocation(widget, &allocation);
+	if (entry->pressed) {
+		allocation.x++;
+		allocation.y++;
+	}
+
+	cairo_set_source_surface(cr, entry->icon,
+	                         allocation.x, allocation.y);
+	cairo_paint(cr);
+
+	cairo_set_source_rgba(cr, 1.0, 1.0, 1.0, 1.0);
+	cairo_set_font_size (cr, 20); 
+	cairo_move_to (cr, allocation.x+60, allocation.y+40);
+	cairo_show_text (cr, entry->name);
+
+	if (entry->focused) {
+		cairo_set_source_rgba(cr, 1.0, 1.0, 1.0, 0.4);
+		cairo_mask_surface(cr, entry->icon,
+		                   allocation.x, allocation.y);
+	}
+
+	cairo_destroy(cr);
+}
+
+static void
+unlock_dialog_add_user_entry(struct unlock_dialog *dialog,
+			     const char *name)
+{
+	struct user_entry *entry;
+
+	entry = xzalloc(sizeof *entry);
+	entry->icon = load_icon_or_fallback(DATADIR "/weston/user.png");
+	entry->name = strdup(name);
+
+	entry->dialog = dialog;
+	wl_list_insert(dialog->user_list.prev, &entry->link);
+
+	entry->widget = widget_add_widget(dialog->widget, entry);
+	widget_set_enter_handler(entry->widget,
+	                         user_entry_enter_handler);
+	widget_set_leave_handler(entry->widget,
+                                 user_entry_leave_handler);
+	widget_set_button_handler(entry->widget,
+                                  user_entry_button_handler);
+	widget_set_redraw_handler(entry->widget,
+                                  user_entry_redraw_handler);
+}
+
 enum {
 	BACKGROUND_SCALE,
 	BACKGROUND_SCALE_CROP,
@@ -1040,8 +1152,6 @@ unlock_dialog_redraw_handler(struct widget *widget, void *data)
 	struct rectangle allocation;
 	cairo_surface_t *surface;
 	cairo_t *cr;
-	cairo_pattern_t *pat;
-	double cx, cy, r, f;
 
 	cr = widget_cairo_create(widget);
 
@@ -1051,33 +1161,36 @@ unlock_dialog_redraw_handler(struct widget *widget, void *data)
 	cairo_set_operator(cr, CAIRO_OPERATOR_SOURCE);
 	cairo_set_source_rgba(cr, 0, 0, 0, 0.6);
 	cairo_fill(cr);
-
-	cairo_translate(cr, allocation.x, allocation.y);
-	if (dialog->button_focused)
-		f = 1.0;
-	else
-		f = 0.7;
-
-	cx = allocation.width / 2.0;
-	cy = allocation.height / 2.0;
-	r = (cx < cy ? cx : cy) * 0.4;
-	pat = cairo_pattern_create_radial(cx, cy, r * 0.7, cx, cy, r);
-	cairo_pattern_add_color_stop_rgb(pat, 0.0, 0, 0.86 * f, 0);
-	cairo_pattern_add_color_stop_rgb(pat, 0.85, 0.2 * f, f, 0.2 * f);
-	cairo_pattern_add_color_stop_rgb(pat, 1.0, 0, 0.86 * f, 0);
-	cairo_set_source(cr, pat);
-	cairo_pattern_destroy(pat);
-	cairo_arc(cr, cx, cy, r, 0.0, 2.0 * M_PI);
-	cairo_fill(cr);
-
-	widget_set_allocation(dialog->button,
-			      allocation.x + cx - r,
-			      allocation.y + cy - r, 2 * r, 2 * r);
-
 	cairo_destroy(cr);
 
 	surface = window_get_surface(dialog->window);
 	cairo_surface_destroy(surface);
+}
+
+static void
+unlock_dialog_resize_handler(struct widget *widget,
+			     int32_t width, int32_t height, void *data)
+{
+	struct user_entry *entry;
+	struct unlock_dialog *dialog = data;
+	cairo_t *cr;
+	cairo_text_extents_t extents;
+	int x, y, w, h;
+       
+	x = 50;
+	y = 100;
+	wl_list_for_each(entry, &dialog->user_list, link) {
+		cr = cairo_create (entry->icon);
+		cairo_text_extents (cr, entry->name, &extents);
+
+		w = cairo_image_surface_get_width(entry->icon) + extents.width + 10;
+		h = cairo_image_surface_get_height(entry->icon);
+		widget_set_allocation(entry->widget,
+		                      x, y - h / 2, w + 1, h + 1);
+		y += h + 10;
+
+		cairo_destroy (cr);
+	}
 }
 
 static void
@@ -1163,14 +1276,17 @@ unlock_dialog_create(struct desktop *desktop)
 
 	dialog->window = window_create_custom(display);
 	dialog->widget = window_frame_create(dialog->window, dialog);
-	window_set_title(dialog->window, "Unlock your desktop");
+	window_set_title(dialog->window, "Choose a user");
 
 	window_set_user_data(dialog->window, dialog);
 	window_set_keyboard_focus_handler(dialog->window,
 					  unlock_dialog_keyboard_focus_handler);
 	dialog->button = widget_add_widget(dialog->widget, dialog);
+	wl_list_init(&dialog->user_list);
 	widget_set_redraw_handler(dialog->widget,
 				  unlock_dialog_redraw_handler);
+	widget_set_resize_handler(dialog->widget,
+	                          unlock_dialog_resize_handler);
 	widget_set_enter_handler(dialog->button,
 				 unlock_dialog_widget_enter_handler);
 	widget_set_leave_handler(dialog->button,
@@ -1182,10 +1298,32 @@ unlock_dialog_create(struct desktop *desktop)
 	widget_set_touch_up_handler(dialog->button,
 				      unlock_dialog_touch_up_handler);
 
+	unlock_dialog_add_user_entry(dialog, "Guest");
+	int usercount = 0;
+	size_t extchars;
+	size_t extwidth = 0;
+
+	struct passwd *pwd = getpwent();
+	while (pwd != NULL) {
+		if ((pwd->pw_uid >= 1000)
+		    && (strcmp(pwd->pw_name,"nobody") != 0)
+		    && (strcmp(pwd->pw_shell,"/bin/false") != 0)
+		    && (strcmp(pwd->pw_shell,"/sbin/nologin") != 0)) {
+			usercount++;
+			if ((extchars = strlen(pwd->pw_name)-7) > 0)
+				if (extchars > extwidth)
+					extwidth = extchars;
+			unlock_dialog_add_user_entry(dialog, pwd->pw_name);
+		}
+		pwd = getpwent();
+	}
+	endpwent();
+
 	desktop_shell_set_lock_surface(desktop->shell,
 				       window_get_wl_surface(dialog->window));
 
-	window_schedule_resize(dialog->window, 260, 230);
+	window_schedule_resize(dialog->window, 260 + extwidth*10,
+	                                       200 + usercount*68);
 
 	return dialog;
 }
