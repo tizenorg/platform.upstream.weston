@@ -73,6 +73,8 @@ struct workspace {
 	struct focus_surface *fsurf_front;
 	struct focus_surface *fsurf_back;
 	struct weston_view_animation *focus_animation;
+
+	char *username;
 };
 
 struct desktop_shell {
