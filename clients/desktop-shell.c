@@ -68,6 +68,8 @@ struct desktop {
 	enum cursor_type grab_cursor;
 
 	int painted;
+
+	char *current_user;
 };
 
 struct surface {
@@ -88,6 +90,7 @@ struct panel {
 	int painted;
 	uint32_t color;
 	char *username;
+	struct wl_list link;
 };
 
 struct taskbar {
@@ -117,6 +120,7 @@ struct output {
 	struct wl_list link;
 
 	struct panel *panel;
+	struct wl_list panels;
 	struct taskbar *taskbar;
 	struct background *background;
 };
@@ -733,7 +737,7 @@ panel_create(struct desktop *desktop)
 	window_set_title(panel->window, "panel");
 	window_set_user_data(panel->window, panel);
 
-	panel->username = strdup("Guest");
+	panel->username = strdup(desktop->current_user);
 
 	widget_set_redraw_handler(panel->widget, panel_redraw_handler);
 	widget_set_resize_handler(panel->widget, panel_resize_handler);
@@ -1124,16 +1128,11 @@ user_entry_button_handler(struct widget *widget,
 {
 	struct user_entry *entry = widget_get_user_data(widget);
 	struct desktop *desktop = entry->dialog->desktop;
-	struct output *output;
 
 	if (button == BTN_LEFT) {
-		if (state == WL_POINTER_BUTTON_STATE_RELEASED) {
-			wl_list_for_each(output, &desktop->outputs, link) {
-				output->panel->username = strdup(entry->name);
-				update_window(output->panel->window);
-			}
-			display_defer(desktop->display, &desktop->unlock_task);
-		}
+		if (state == WL_POINTER_BUTTON_STATE_RELEASED)
+			desktop_shell_switch_user(desktop->shell,
+			                          entry->name);
 	}
 
 	widget_schedule_redraw(widget);
@@ -1583,11 +1582,46 @@ desktop_shell_add_managed_surface(void *data,
 	}
 }
 
+static void
+desktop_shell_user_switched(void *data,
+			    struct desktop_shell *desktop_shell,
+			    const char *username)
+{
+	struct desktop *desktop = data;
+	struct output *output;
+	struct panel *panel;
+	struct wl_surface *surface;
+
+	desktop->current_user = strdup(username);
+	int panel_exists = 0;
+
+	wl_list_for_each(output, &desktop->outputs, link) {
+		wl_list_for_each(panel, &output->panels, link) {
+			if (strcmp(panel->username, username) == 0) {
+				panel_exists = 1;
+				surface = window_get_wl_surface(panel->window);
+				desktop_shell_set_panel(desktop->shell,	output->output, surface);
+			}
+		}
+
+		if (!panel_exists) {
+			output->panel = panel_create(desktop);
+			wl_list_insert(&output->panels, &output->panel->link);
+			surface = window_get_wl_surface(output->panel->window);
+			desktop_shell_set_panel(desktop->shell,	output->output, surface);
+		}
+		panel_exists = 0;
+	}
+
+	display_defer(desktop->display, &desktop->unlock_task);
+}
+
 static const struct desktop_shell_listener listener = {
 	desktop_shell_configure,
 	desktop_shell_prepare_lock_surface,
 	desktop_shell_grab_cursor,
-	desktop_shell_add_managed_surface
+	desktop_shell_add_managed_surface,
+	desktop_shell_user_switched
 };
 
 static void
@@ -1832,7 +1866,10 @@ output_init(struct output *output, struct desktop *desktop)
 {
 	struct wl_surface *surface;
 
+	wl_list_init(&output->panels);
+
 	output->panel = panel_create(desktop);
+	wl_list_insert(&output->panels, &output->panel->link);
 	surface = window_get_wl_surface(output->panel->window);
 	desktop_shell_set_panel(desktop->shell,
 				output->output, surface);
@@ -1909,14 +1946,16 @@ static void
 panel_add_launchers(struct panel *panel, struct desktop *desktop)
 {
 	struct weston_config_section *s;
+	char *user_section;
 	char *icon, *path;
 	const char *name;
 	int count;
 
+	asprintf(&user_section, "launcher-%s", panel->username);
 	count = 0;
 	s = NULL;
 	while (weston_config_next_section(desktop->config, &s, &name)) {
-		if (strcmp(name, "launcher") != 0)
+		if ((strcmp(name, "launcher") != 0) && (strcmp(name, user_section) != 0))
 			continue;
 
 		weston_config_section_get_string(s, "icon", &icon, NULL);
@@ -1932,6 +1971,7 @@ panel_add_launchers(struct panel *panel, struct desktop *desktop)
 		free(icon);
 		free(path);
 	}
+	free(user_section);
 
 	if (count == 0) {
 		/* add default launcher */
@@ -1953,6 +1993,8 @@ int main(int argc, char *argv[])
 	desktop.config = weston_config_parse("weston.ini");
 	s = weston_config_get_section(desktop.config, "shell", NULL, NULL);
 	weston_config_section_get_bool(s, "locking", &desktop.locking, 1);
+
+	desktop.current_user = strdup("Guest");
 
 	desktop.display = display_create(&argc, argv);
 	if (desktop.display == NULL) {

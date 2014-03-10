@@ -3771,9 +3771,13 @@ desktop_shell_set_panel(struct wl_client *client,
 	struct weston_view *view, *next;
 
 	if (surface->configure) {
-		wl_resource_post_error(surface_resource,
-				       WL_DISPLAY_ERROR_INVALID_OBJECT,
-				       "surface role already assigned");
+		wl_list_for_each_safe(view, next, &shell->panel_layer.view_list, layer_link)
+			wl_list_remove(&view->layer_link);
+		wl_list_for_each(view, &surface->views, surface_link) {
+			weston_view_set_position(view, view->output->x, view->output->y);
+			wl_list_insert(&shell->panel_layer.view_list, &view->layer_link);
+			weston_compositor_schedule_repaint(view->surface->compositor);
+		}
 		return;
 	}
 
@@ -3966,6 +3970,18 @@ desktop_shell_lock(struct wl_client *client,
 	lock(shell);
 }
 
+static void
+desktop_shell_switch_user(struct wl_client *client,
+			    struct wl_resource *resource,
+			    const char *username)
+{
+	struct desktop_shell *shell = wl_resource_get_user_data(resource);
+
+	shell->current_user = strdup(username);
+	desktop_shell_send_user_switched(shell->child.desktop_shell,
+			                 username);
+}
+
 static const struct desktop_shell_interface desktop_shell_implementation = {
 	desktop_shell_set_background,
 	desktop_shell_set_panel,
@@ -3974,7 +3990,8 @@ static const struct desktop_shell_interface desktop_shell_implementation = {
 	desktop_shell_unlock,
 	desktop_shell_set_grab_surface,
 	desktop_shell_desktop_ready,
-	desktop_shell_lock
+	desktop_shell_lock,
+	desktop_shell_switch_user
 };
 
 static void
@@ -5783,6 +5800,7 @@ shell_destroy(struct wl_listener *listener, void *data)
 
 	free(shell->screensaver.path);
 	free(shell->client);
+	free(shell->current_user);
 	free(shell);
 }
 
@@ -5919,6 +5937,8 @@ module_init(struct weston_compositor *ec,
 
 	wl_array_init(&shell->workspaces.array);
 	wl_list_init(&shell->workspaces.client_list);
+
+	shell->current_user = strdup("Guest");
 
 	if (input_panel_setup(shell) < 0)
 		return -1;
