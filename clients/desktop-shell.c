@@ -102,6 +102,8 @@ struct taskbar {
 	struct desktop *desktop;
 	int painted;
 	uint32_t color;
+	char *username;
+	struct wl_list link;
 };
 
 struct background {
@@ -123,6 +125,7 @@ struct output {
 	struct panel *panel;
 	struct wl_list panels;
 	struct taskbar *taskbar;
+	struct wl_list taskbars;
 	struct background *background;
 };
 
@@ -986,6 +989,8 @@ taskbar_create(struct desktop *desktop)
 	window_set_title(taskbar->window, "taskbar");
 	window_set_user_data(taskbar->window, taskbar);
 
+	taskbar->username = strdup(desktop->current_user);
+
 	widget_set_redraw_handler(taskbar->widget, taskbar_redraw_handler);
 	widget_set_resize_handler(taskbar->widget, taskbar_resize_handler);
 
@@ -1634,10 +1639,12 @@ desktop_shell_user_switched(void *data,
 	struct desktop *desktop = data;
 	struct output *output;
 	struct panel *panel;
+	struct taskbar *taskbar;
 	struct wl_surface *surface;
 
 	desktop->current_user = strdup(username);
 	int panel_exists = 0;
+	int taskbar_exists = 0;
 
 	wl_list_for_each(output, &desktop->outputs, link) {
 		wl_list_for_each(panel, &output->panels, link) {
@@ -1647,7 +1654,6 @@ desktop_shell_user_switched(void *data,
 				desktop_shell_set_panel(desktop->shell,	output->output, surface);
 			}
 		}
-
 		if (!panel_exists) {
 			output->panel = panel_create(desktop);
 			wl_list_insert(&output->panels, &output->panel->link);
@@ -1655,6 +1661,21 @@ desktop_shell_user_switched(void *data,
 			desktop_shell_set_panel(desktop->shell,	output->output, surface);
 		}
 		panel_exists = 0;
+
+		wl_list_for_each(taskbar, &output->taskbars, link) {
+			if (strcmp(taskbar->username, username) == 0) {
+				taskbar_exists = 1;
+				surface = window_get_wl_surface(taskbar->window);
+				desktop_shell_set_taskbar(desktop->shell, output->output, surface);
+			}
+		}
+		if (!taskbar_exists) {
+			output->taskbar = taskbar_create(desktop);
+			wl_list_insert(&output->taskbars, &output->taskbar->link);
+			surface = window_get_wl_surface(output->taskbar->window);
+			desktop_shell_set_taskbar(desktop->shell, output->output, surface);
+		}
+		taskbar_exists = 0;
 	}
 
 	display_defer(desktop->display, &desktop->unlock_task);
@@ -1911,6 +1932,7 @@ output_init(struct output *output, struct desktop *desktop)
 	struct wl_surface *surface;
 
 	wl_list_init(&output->panels);
+	wl_list_init(&output->taskbars);
 
 	output->panel = panel_create(desktop);
 	wl_list_insert(&output->panels, &output->panel->link);
@@ -1919,6 +1941,7 @@ output_init(struct output *output, struct desktop *desktop)
 				output->output, surface);
 
 	output->taskbar = taskbar_create(desktop);
+	wl_list_insert(&output->taskbars, &output->taskbar->link);
 	surface = window_get_wl_surface(output->taskbar->window);
 	desktop_shell_set_taskbar(desktop->shell,
 				  output->output, surface);

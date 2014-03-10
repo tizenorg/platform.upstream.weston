@@ -3821,9 +3821,13 @@ desktop_shell_set_taskbar(struct wl_client *client,
 	struct weston_view *view, *next;
 
 	if (surface->configure) {
-		wl_resource_post_error(surface_resource,
-				       WL_DISPLAY_ERROR_INVALID_OBJECT,
-				       "surface role already assigned");
+		wl_list_for_each_safe(view, next, &shell->taskbar_layer.view_list, layer_link)
+			wl_list_remove(&view->layer_link);
+		wl_list_for_each(view, &surface->views, surface_link) {
+			weston_view_set_position(view, view->output->x, view->output->y);
+			wl_list_insert(&shell->taskbar_layer.view_list, &view->layer_link);
+			weston_compositor_schedule_repaint(view->surface->compositor);
+		}
 		return;
 	}
 
