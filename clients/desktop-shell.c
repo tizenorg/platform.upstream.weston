@@ -293,6 +293,7 @@ run_as_user(char *command[], char *user)
 	initgroups(pwd->pw_name, pwd->pw_gid);
 	setgid(pwd->pw_gid);
 	setuid(pwd->pw_uid);
+	chdir(pwd->pw_dir);
 	execve(command[0], command, env);
 	setgid(0);
 	setuid(0);
@@ -1659,6 +1660,7 @@ desktop_shell_user_switched(void *data,
 		wl_list_for_each(panel, &output->panels, link) {
 			if (strcmp(panel->username, username) == 0) {
 				panel_exists = 1;
+				output->panel = panel;
 				surface = window_get_wl_surface(panel->window);
 				desktop_shell_set_panel(desktop->shell,	output->output, surface);
 			}
@@ -1674,6 +1676,7 @@ desktop_shell_user_switched(void *data,
 		wl_list_for_each(taskbar, &output->taskbars, link) {
 			if (strcmp(taskbar->username, username) == 0) {
 				taskbar_exists = 1;
+				output->taskbar = taskbar;
 				surface = window_get_wl_surface(taskbar->window);
 				desktop_shell_set_taskbar(desktop->shell, output->output, surface);
 			}
@@ -1689,6 +1692,7 @@ desktop_shell_user_switched(void *data,
 		wl_list_for_each(background, &output->backgrounds, link) {
 			if (strcmp(background->username, username) == 0) {
 				background_exists = 1;
+				output->background = background;
 				surface = window_get_wl_surface(background->window);
 				desktop_shell_set_background(desktop->shell, output->output, surface);
 			}
