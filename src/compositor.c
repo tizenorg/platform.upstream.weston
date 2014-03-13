@@ -3975,14 +3975,14 @@ load_modules(struct weston_compositor *ec, const char *modules,
 }
 
 static const char xdg_error_message[] =
-	"fatal: environment variable XDG_RUNTIME_DIR is not set.\n";
+	"fatal: environment variable WAYLAND_DISPLAY_DIR or XDG_RUNTIME_DIR is not set.\n";
 
 static const char xdg_wrong_message[] =
-	"fatal: environment variable XDG_RUNTIME_DIR\n"
+	"fatal: environment variable WAYLAND_DISPLAY_DIR or XDG_RUNTIME_DIR\n"
 	"is set to \"%s\", which is not a directory.\n";
 
 static const char xdg_wrong_mode_message[] =
-	"warning: XDG_RUNTIME_DIR \"%s\" is not configured\n"
+	"warning: WAYLAND_DISPLAY_DIR or XDG_RUNTIME_DIR \"%s\" is not configured\n"
 	"correctly.  Unix access mode must be 0700 but is %o,\n"
 	"and XDG_RUNTIME_DIR must be owned by the user, but is\n"
 	"owned by UID %d.\n";
@@ -3995,7 +3995,10 @@ static const char xdg_detail_message[] =
 static void
 verify_xdg_runtime_dir(void)
 {
-	char *dir = getenv("XDG_RUNTIME_DIR");
+	char *dir;
+
+	if ((dir = getenv("WAYLAND_DISPLAY_DIR")) == NULL)
+		dir = getenv("XDG_RUNTIME_DIR");
 	struct stat s;
 
 	if (!dir) {
@@ -4266,7 +4269,8 @@ int main(int argc, char *argv[])
 	}
 
 	char *xrd = NULL;
-	xrd = getenv("XDG_RUNTIME_DIR");
+	if ((xrd = getenv("WAYLAND_DISPLAY_DIR")) == NULL)
+		xrd = getenv("XDG_RUNTIME_DIR");
 	if (xrd) {
 		char *socket_path;
 		asprintf(&socket_path, "%s/%s", xrd, socket_name);

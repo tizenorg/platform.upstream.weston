@@ -273,11 +273,13 @@ static int
 run_as_user(char *command[], char *user)
 {
 	struct passwd *pwd = NULL;
+	char *wdd = NULL;
 	char *xrd = NULL;
 
 	pwd = getpwnam (user);
+	wdd = getenv("WAYLAND_DISPLAY_DIR");
 	xrd = getenv("XDG_RUNTIME_DIR");
-	if (!pwd || !xrd)
+	if (!pwd || (!wdd && !xrd))
 		return -1;
 
 	char *env[16];
@@ -287,8 +289,33 @@ run_as_user(char *command[], char *user)
 	asprintf(&env[3], "SHELL=%s", pwd->pw_shell);
 	asprintf(&env[4], "LOGNAME=%s", pwd->pw_name);
 	asprintf(&env[5], "PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin");
-	asprintf(&env[6], "XDG_RUNTIME_DIR=%s", xrd);
-	env[7] = 0;
+
+	if (wdd)
+		asprintf(&env[6], "WAYLAND_DISPLAY_DIR=%s", wdd);
+	else if (xrd)	
+		asprintf(&env[6], "XDG_RUNTIME_DIR=%s", xrd);
+
+
+	FILE *file = NULL; char c; char *line; size_t len = 0; int i=7;
+	file=fopen("/etc/profile.d/weston.sh", "r");
+	if (file != NULL) {
+		line = (char *)malloc(256);
+		while ((c = getline(&line, &len, file)) != -1) {
+			if (i == 15) break;
+			if ((line[0] != '#')&&(line[0] != ' ')&&(line[0] != '\n')) {
+				char *var = NULL;
+				var = strchr(line, ' ');
+				if (var != NULL) {
+					var[strlen(var)-1] = '\0';
+					asprintf(&env[i], var+1);
+					i++;
+				}
+			}
+		}
+		free(line);
+		fclose(file);
+	}
+	env[i] = 0;
 
 	initgroups(pwd->pw_name, pwd->pw_gid);
 	setgid(pwd->pw_gid);
@@ -321,7 +348,7 @@ panel_launcher_activate(struct panel_launcher *widget)
 	if (getuid() == 0) {
 		char *user = widget->panel->desktop->current_user;
 		if (strcmp(user,"Guest") == 0)
-			user = strdup("nobody");                
+			user = strdup("app");                
 
 		if (run_as_user(argv, user) < 0) {
 			fprintf(stderr, "execl '%s' failed: %m\n", argv[0]);
@@ -1507,14 +1534,17 @@ unlock_dialog_create(struct desktop *desktop)
 	struct passwd *pwd = getpwent();
 	while (pwd != NULL) {
 		if ((pwd->pw_uid >= 1000)
-		    && (strcmp(pwd->pw_name,"nobody") != 0)
+		    && (strcmp(pwd->pw_name,"app") != 0)
 		    && (strcmp(pwd->pw_shell,"/bin/false") != 0)
 		    && (strcmp(pwd->pw_shell,"/sbin/nologin") != 0)) {
-			usercount++;
-			if ((extchars = strlen(pwd->pw_name)-7) > 0)
-				if (extchars > extwidth)
-					extwidth = extchars;
-			unlock_dialog_add_user_entry(dialog, pwd->pw_name);
+			struct group* grp = getgrgid(pwd->pw_gid);
+			if (strcmp(grp->gr_name,"users") == 0) {
+				usercount++;
+				if ((extchars = strlen(pwd->pw_name)-7) > 0)
+					if (extchars > extwidth)
+						extwidth = extchars;
+				unlock_dialog_add_user_entry(dialog, pwd->pw_name);
+			}
 		}
 		pwd = getpwent();
 	}

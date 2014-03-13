@@ -148,7 +148,8 @@ os_create_anonymous_file(off_t size)
 	int fd;
 	int ret;
 
-	path = getenv("XDG_RUNTIME_DIR");
+	if ((path = getenv("WAYLAND_DISPLAY_DIR")) == NULL)
+		path = getenv("XDG_RUNTIME_DIR");
 	if (!path) {
 		errno = ENOENT;
 		return -1;
