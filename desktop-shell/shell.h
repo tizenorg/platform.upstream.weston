@@ -124,6 +124,7 @@ struct desktop_shell {
 		struct wl_array array;
 		unsigned int current;
 		unsigned int num;
+		unsigned int num_per_user;
 
 		struct wl_list client_list;
 

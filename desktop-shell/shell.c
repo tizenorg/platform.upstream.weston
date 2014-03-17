@@ -467,7 +467,7 @@ shell_configuration(struct desktop_shell *shell)
 	shell->focus_animation_type = get_animation_type(s);
 	free(s);
 	weston_config_section_get_uint(section, "num-workspaces",
-				       &shell->workspaces.num,
+				       &shell->workspaces.num_per_user,
 				       DEFAULT_NUM_WORKSPACES);
 }
 
@@ -1292,13 +1292,20 @@ workspace_manager_move_surface(struct wl_client *client,
 		wl_resource_get_user_data(surface_resource);
 	struct weston_surface *main_surface;
 	struct shell_surface *shell_surface;
+	struct workspace *cws;
+	struct workspace *dws;
 
 	main_surface = weston_surface_get_main_surface(surface);
 	shell_surface = get_shell_surface(main_surface);
 	if (shell_surface == NULL)
 		return;
 
-	move_surface_to_workspace(shell, shell_surface, workspace);
+	cws = get_current_workspace(shell);
+	dws = get_workspace(shell, workspace);
+	if ((workspace < shell->workspaces.current) && (!cws->username))
+		move_surface_to_workspace(shell, shell_surface, workspace);
+	else if ((workspace > shell->workspaces.current) && (!dws->username))
+		move_surface_to_workspace(shell, shell_surface, workspace);
 }
 
 static const struct workspace_manager_interface workspace_manager_implementation = {
@@ -2400,10 +2407,12 @@ set_minimized(struct weston_surface *surface, uint32_t is_true)
 	 /* hide or show, depending on the state */
 	if (is_true) {
 		wl_array_for_each(cuws, &shsurf->shell->workspaces.array) {
-			if (strcmp((*cuws)->username, shsurf->shell->current_user) == 0) {
-				wl_list_insert(&(*cuws)->minimized_layer.view_list, &view->layer_link);
-				break;
-			}				
+			if ((*cuws)->username) {
+				if (strcmp((*cuws)->username, shsurf->shell->current_user) == 0) {
+					wl_list_insert(&(*cuws)->minimized_layer.view_list, &view->layer_link);
+					break;
+				}
+			}
 		}
 
 		drop_focus_state(shsurf->shell, current_ws, view->surface);
@@ -2416,10 +2425,12 @@ set_minimized(struct weston_surface *surface, uint32_t is_true)
 		}
 	} else {
 		wl_array_for_each(cuws, &shsurf->shell->workspaces.array) {
-			if (strcmp((*cuws)->username, shsurf->shell->current_user) == 0) {
-				wl_list_insert(&(*cuws)->layer.view_list, &view->layer_link);
-				break;
-			}			
+			if ((*cuws)->username) {
+				if (strcmp((*cuws)->username, shsurf->shell->current_user) == 0) {
+					wl_list_insert(&(*cuws)->layer.view_list, &view->layer_link);
+					break;
+				}
+			}
 		}
 
 		wl_list_for_each(seat, &shsurf->shell->compositor->seat_list, link) {
@@ -3946,7 +3957,7 @@ resume_desktop(struct desktop_shell *shell)
 	wl_list_insert(&shell->panel_layer.link,
 		       &ws->layer.link);
 
-	struct workspace **cuws; int i=0;
+	struct workspace **cuws; unsigned int i=0;
 
 	wl_array_for_each(cuws, &shell->workspaces.array) {
 		if ((*cuws)->username) {
@@ -3961,15 +3972,18 @@ resume_desktop(struct desktop_shell *shell)
 	}
 
 	struct workspace **uws;
-	uws = wl_array_add(&shell->workspaces.array, sizeof *uws);
-	*uws = workspace_create();
-	(*uws)->username = strdup(shell->current_user);
-	shell->workspaces.num++;
-	 /* */
-	wl_list_remove (&ws->layer.link);
-	wl_list_insert(&shell->panel_layer.link, &(*uws)->layer.link);
-	shell->workspaces.current = shell->workspaces.num-1;
-
+	for (i = 0; i < shell->workspaces.num_per_user; i++)
+	{
+		uws = wl_array_add(&shell->workspaces.array, sizeof *uws);
+		*uws = workspace_create();
+		shell->workspaces.num++;
+		if (i == 0) {
+			(*uws)->username = strdup(shell->current_user);
+			wl_list_remove (&ws->layer.link);
+			wl_list_insert(&shell->panel_layer.link, &(*uws)->layer.link);
+			shell->workspaces.current = shell->workspaces.num-1;
+		}
+	}
 end:
 	restore_focus_state(shell, get_current_workspace(shell));
 
@@ -5709,13 +5723,16 @@ workspace_up_binding(struct weston_seat *seat, uint32_t time,
 {
 	struct desktop_shell *shell = data;
 	unsigned int new_index = shell->workspaces.current;
+	struct workspace *ws;
 
 	if (shell->locked)
 		return;
 	if (new_index != 0)
 		new_index--;
 
-	change_workspace(shell, new_index);
+	ws = get_workspace(shell, shell->workspaces.current);
+	if (!ws->username)
+		change_workspace(shell, new_index);
 }
 
 static void
@@ -5724,13 +5741,16 @@ workspace_down_binding(struct weston_seat *seat, uint32_t time,
 {
 	struct desktop_shell *shell = data;
 	unsigned int new_index = shell->workspaces.current;
+	struct workspace *ws;
 
 	if (shell->locked)
 		return;
 	if (new_index < shell->workspaces.num - 1)
 		new_index++;
 
-	change_workspace(shell, new_index);
+	ws = get_workspace(shell, new_index);
+	if (!ws->username)
+		change_workspace(shell, new_index);
 }
 
 static void
@@ -5739,12 +5759,24 @@ workspace_f_binding(struct weston_seat *seat, uint32_t time,
 {
 	struct desktop_shell *shell = data;
 	unsigned int new_index;
+	unsigned int user_index;
 
 	if (shell->locked)
 		return;
 	new_index = key - KEY_F1;
-	if (new_index >= shell->workspaces.num)
-		new_index = shell->workspaces.num - 1;
+
+	struct workspace **ws; unsigned int i = 0;
+	wl_array_for_each(ws, &shell->workspaces.array) {
+		if ((*ws)->username)
+			if (strcmp((*ws)->username, shell->current_user) == 0)
+				user_index = i;
+		i++;
+	}
+
+	if (new_index >= shell->workspaces.num_per_user)
+		new_index = user_index + shell->workspaces.num_per_user-1;
+	else
+		new_index = user_index + new_index;
 
 	change_workspace(shell, new_index);
 }
@@ -5755,6 +5787,7 @@ workspace_move_surface_up_binding(struct weston_seat *seat, uint32_t time,
 {
 	struct desktop_shell *shell = data;
 	unsigned int new_index = shell->workspaces.current;
+	struct workspace *ws;
 
 	if (shell->locked)
 		return;
@@ -5762,7 +5795,9 @@ workspace_move_surface_up_binding(struct weston_seat *seat, uint32_t time,
 	if (new_index != 0)
 		new_index--;
 
-	take_surface_to_workspace_by_seat(shell, seat, new_index);
+	ws = get_workspace(shell, shell->workspaces.current);
+	if (!ws->username)
+		take_surface_to_workspace_by_seat(shell, seat, new_index);
 }
 
 static void
@@ -5771,6 +5806,7 @@ workspace_move_surface_down_binding(struct weston_seat *seat, uint32_t time,
 {
 	struct desktop_shell *shell = data;
 	unsigned int new_index = shell->workspaces.current;
+	struct workspace *ws;
 
 	if (shell->locked)
 		return;
@@ -5778,7 +5814,9 @@ workspace_move_surface_down_binding(struct weston_seat *seat, uint32_t time,
 	if (new_index < shell->workspaces.num - 1)
 		new_index++;
 
-	take_surface_to_workspace_by_seat(shell, seat, new_index);
+	ws = get_workspace(shell, new_index);
+	if (!ws->username)
+		take_surface_to_workspace_by_seat(shell, seat, new_index);
 }
 
 static void
@@ -6015,16 +6053,18 @@ module_init(struct weston_compositor *ec,
 	shell->exposay.state_cur = EXPOSAY_LAYOUT_INACTIVE;
 	shell->exposay.state_target = EXPOSAY_TARGET_CANCEL;
 
-	for (i = 0; i < shell->workspaces.num; i++) {
+	shell->workspaces.num = 0;
+	for (i = 0; i < shell->workspaces.num_per_user; i++) {
 		pws = wl_array_add(&shell->workspaces.array, sizeof *pws);
 		if (pws == NULL)
 			return -1;
 
 		*pws = workspace_create();
-		if (i == 0)
-			(*pws)->username = strdup("Guest");
 		if (*pws == NULL)
 			return -1;
+		if (i == 0)
+			(*pws)->username = strdup("Guest");
+		shell->workspaces.num++;
 	}
 	activate_workspace(shell, 0);
 
