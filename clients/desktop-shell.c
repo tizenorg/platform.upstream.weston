@@ -276,7 +276,7 @@ run_as_user(char *command[], char *user)
 	char *wdd = NULL;
 	char *xrd = NULL;
 
-	pwd = getpwnam (user);
+	pwd = getpwnam(user);
 	wdd = getenv("WAYLAND_DISPLAY_DIR");
 	xrd = getenv("XDG_RUNTIME_DIR");
 	if (!pwd || (!wdd && !xrd))
@@ -289,41 +289,32 @@ run_as_user(char *command[], char *user)
 	asprintf(&env[3], "SHELL=%s", pwd->pw_shell);
 	asprintf(&env[4], "LOGNAME=%s", pwd->pw_name);
 	asprintf(&env[5], "PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin");
-
 	if (wdd)
 		asprintf(&env[6], "WAYLAND_DISPLAY_DIR=%s", wdd);
 	else if (xrd)	
 		asprintf(&env[6], "XDG_RUNTIME_DIR=%s", xrd);
+	env[7] = 0;
 
+	int i;
+	for (i = 0; command[i]; i++);
 
-	FILE *file = NULL; char c; char *line; size_t len = 0; int i=7;
-	file=fopen("/etc/profile.d/weston.sh", "r");
-	if (file != NULL) {
-		line = (char *)malloc(256);
-		while ((c = getline(&line, &len, file)) != -1) {
-			if (i == 15) break;
-			if ((line[0] != '#')&&(line[0] != ' ')&&(line[0] != '\n')) {
-				char *var = NULL;
-				var = strchr(line, ' ');
-				if (var != NULL) {
-					var[strlen(var)-1] = '\0';
-					asprintf(&env[i], var+1);
-					i++;
-				}
-			}
-		}
-		free(line);
-		fclose(file);
-	}
-	env[i] = 0;
+	int j = i;
+	char *command_launch[j+2];
+	command_launch[j+1] = NULL;
+	for (j; j > 0; j--)
+		command_launch[j] = strdup(command[j-1]);
+	command_launch[0] = strdup(LIBEXECDIR "/weston-launcher");
 
 	initgroups(pwd->pw_name, pwd->pw_gid);
 	setgid(pwd->pw_gid);
 	setuid(pwd->pw_uid);
 	chdir(pwd->pw_dir);
-	execve(command[0], command, env);
+	execve(command_launch[0], command_launch, env);
 	setgid(0);
 	setuid(0);
+
+	for (j=0; j < i+2; j++)
+		free(command_launch[j]);
 
 	return 0;
 }

@@ -17,6 +17,7 @@ AM_CFLAGS = $(GCC_CFLAGS)
 AM_CPPFLAGS =					\
 	-DDATADIR='"$(datadir)"'		\
 	-DBINDIR='"$(bindir)"'			\
+	-DLIBEXECDIR='"$(libexecdir)"'		\
 	$(CLIENT_CFLAGS) $(CAIRO_EGL_CFLAGS)
 
 if BUILD_SIMPLE_CLIENTS
@@ -61,7 +62,8 @@ libexec_PROGRAMS =				\
 	weston-screenshooter			\
 	$(screensaver)				\
 	weston-keyboard				\
-	weston-simple-im
+	weston-simple-im			\
+	weston-launcher
 
 clients_programs =				\
 	weston-flower				\
@@ -193,6 +195,9 @@ weston_simple_im_SOURCES = 			\
 	input-method-protocol.c			\
 	input-method-client-protocol.h
 weston_simple_im_LDADD = $(CLIENT_LIBS)
+
+weston_launcher_SOURCES =			\
+	weston-launcher
 
 weston_info_SOURCES =				\
 	weston-info.c				\
