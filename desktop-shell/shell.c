@@ -5360,7 +5360,7 @@ switcher_next(struct switcher *switcher)
 			if (strcmp((*cuws)->username, shell->current_user) == 0) {
 				wl_list_for_each_safe(view, tmp, &(*cuws)->minimized_layer.view_list, layer_link) {
 					wl_list_remove(&view->layer_link);
-					wl_list_insert(&(*cuws)->layer.view_list, &view->layer_link);
+					wl_list_insert(&ws->layer.view_list, &view->layer_link);
 					minimized = wl_array_add(&switcher->minimized_array, sizeof *minimized);
 					*minimized = view;
 				}
