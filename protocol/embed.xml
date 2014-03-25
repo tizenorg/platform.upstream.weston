@@ -1,0 +1,177 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<protocol name="embed">
+
+  <copyright>
+    Copyright © 2014 Mark Thomas
+
+    Permission to use, copy, modify, distribute, and sell this
+    software and its documentation for any purpose is hereby granted
+    without fee, provided that the above copyright notice appear in
+    all copies and that both that copyright notice and this permission
+    notice appear in supporting documentation, and that the name of
+    the copyright holders not be used in advertising or publicity
+    pertaining to distribution of the software without specific,
+    written prior permission.  The copyright holders make no
+    representations about the suitability of this software for any
+    purpose.  It is provided "as is" without express or implied
+    warranty.
+
+    THE COPYRIGHT HOLDERS DISCLAIM ALL WARRANTIES WITH REGARD TO THIS
+    SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND
+    FITNESS, IN NO EVENT SHALL THE COPYRIGHT HOLDERS BE LIABLE FOR ANY
+    SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+    WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN
+    AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION,
+    ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF
+    THIS SOFTWARE.
+  </copyright>
+
+  <interface name="embed" version="1">
+    <description summary="embed surfaces from other clients">
+      The global interface for provising surface embedding capabilities.
+      This is a lightweight protocol, intended for simple use cases.
+
+      A surface may have a "hole" attached to it.  A hole has a location
+      and size relative to the surface, and a uid which can be passed to
+      other clients of the server over some IPC mechanism.
+
+      A surface that is not currently in use can be plugged into a hole
+      by creating a "plug" from the surface using the uid of the hole.
+
+      Limitations.
+
+      The two clients must collaborate to manage resizing of the buffer.
+      For interactive resizes, this may not be possible without some
+      delay on the embedded surface.
+    </description>
+
+    <enum name="error">
+      <entry name="bad_uid" value="0"
+             summary="the uid provided is invalid"/>
+      <entry name="bad_surface" value="1"
+             summary="the surface is invalid"/>
+    </enum>
+
+    <request name="create_hole">
+      <description summary="create a hole and attach to a surface">
+	Instantiates a hole object attached to a surface.
+
+	A surface can have multiple holes, and they act
+	independently.
+      </description>
+      <arg name="id" type="new_id" interface="hole"
+           summary="the new hole id"/>
+      <arg name="surface" type="object" interface="wl_surface"
+           summary="the surface"/>
+    </request>
+
+    <request name="create_plug">
+      <description summary="plug a surface into a hole">
+	Instantiates a plug object that plugs a surface into a
+	hole.  If the surface is invalid, or is already in use,
+	e.g. as a shell window, then the bad_surface error is
+	returned.  If the uid does not correspond to a hole, the
+	bad_uid error is returned.
+      </description>
+      <arg name="id" type="new_id" interface="plug"
+           summary="the new plug id"/>
+      <arg name="surface" type="object" interface="wl_surface"
+           summary="the surface to embed"/>
+      <arg name="hole" type="uint"
+           summary="the uid of the hole to embed in"/>
+    </request>
+  </interface>
+
+  <interface name="hole" version="1">
+    <description summary="a hole to embed surfaces in">
+      Represents a hole on a surface into which other surfaces can
+      be embedded.
+    </description>
+
+    <request name="assign_uid">
+      <description summary="assigns a uid to the hole">
+	Requests that the server assigns a uid to a hole, and sends
+	that uid to the client in a uid_assigned event.  Repeated
+	requests will not assign new uids, but will cause new
+	uid_assigned events to occur.
+      </description>
+    </request>
+
+    <event name="uid_assigned">
+      <description summary="informs the client of the hole's uid">
+	Informs the client of the uid of the hole.  This is a 32-bit
+	unsigned integer, which can be passed via IPC mechanisms to
+	other clients of the same server.
+      </description>
+      <arg name="uid" type="uint"
+           summary="the uid of the hole"/>
+    </event>
+
+    <request name="configure">
+      <description summary="configure the location and size of the hole">
+	Configures the location and requested size of the hole.  The
+	embedded surface (if any) is located at the x and y co-ordinates
+	relative to the parent surface.  The embedded surface plug is
+	notified of the size request via a configure event, however this
+	is not enforced.
+
+	Note that changes to the size are not synchronized in the server.
+	Use of the configure request during interactive or animated
+	resizing may cause delayed rendering unless the two clients
+	synchronize their buffer updates.
+      </description>
+      <arg name="x" type="uint"/>
+      <arg name="y" type="uint"/>
+      <arg name="width" type="uint"/>
+      <arg name="height" type="uint"/>
+    </request>
+
+    <request name="remove_plug">
+      <description summary="remove the plug from the hole">
+	Removes the currently embedded plug from the hole.  If there
+	is a plug in the hole, it is send a removed event.  If not,
+	this is a no-op.
+      </description>
+    </request>
+  </interface>
+
+  <interface name="plug" version="1">
+    <description summary="a plug which embeds a surface in a hole">
+      Represents a plug which attaches a surface to another surface
+      with a hole.
+    </description>
+
+    <request name="destroy" type="destructor">
+      <description summary="destroy the plug, removing the surface">
+	Destroys the plug, unplugging the surface from the hole.  The
+	surface is unmapped if it was previously mapped.
+      </description>
+    </request>
+
+    <event name="configure">
+      <description summary="request to resize to the specified size">
+	Informs the plug client what the hole's size has been set to.
+	The plug client should ensure that buffers attached to the
+	surface do not exceed the dimensions given.
+
+	Note that this is not enforced, and a client could use more
+	space than has been allocated to them, however this would
+	overlap the hole client.
+      </description>
+      <arg name="width" type="int"/>
+      <arg name="height" type="int"/>
+    </event>
+
+    <event name="removed">
+      <description summary="the plug has been removed from the hole">
+	Informs the client that the plug has been removed from the hole,
+	either because the hole has requested that the plug be removed,
+	or because the surface the hole was attached to has been
+	destroyed.
+
+	The plug is no longer valid after this event, and the surface
+	will have been unmapped.
+      </description>
+    </event>
+  </interface>
+</protocol>

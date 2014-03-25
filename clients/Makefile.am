@@ -77,6 +77,8 @@ clients_programs =				\
 	weston-stacking				\
 	weston-calibrator			\
 	weston-scaler				\
+	weston-embed-hole			\
+	weston-embed-plug			\
 	$(subsurfaces)				\
 	$(full_gl_client_programs)		\
 	$(cairo_glesv2_programs)
@@ -90,6 +92,8 @@ libtoytoolkit_la_SOURCES =			\
 	text-cursor-position-client-protocol.h	\
 	scaler-protocol.c			\
 	scaler-client-protocol.h		\
+	embed-protocol.c			\
+	embed-client-protocol.h			\
 	workspaces-protocol.c			\
 	workspaces-client-protocol.h		\
 	xdg-shell-protocol.c			\
@@ -132,6 +136,12 @@ weston_resizor_LDADD = libtoytoolkit.la
 
 weston_scaler_SOURCES = scaler.c
 weston_scaler_LDADD = libtoytoolkit.la
+
+weston_embed_hole_SOURCES = embed-hole.c
+weston_embed_hole_LDADD = libtoytoolkit.la
+
+weston_embed_plug_SOURCES = embed-plug.c
+weston_embed_plug_LDADD = libtoytoolkit.la
 
 if HAVE_CAIRO_GLESV2
 cairo_glesv2_programs = weston-nested weston-nested-client
@@ -219,6 +229,8 @@ BUILT_SOURCES =					\
 	desktop-shell-protocol.c		\
 	scaler-client-protocol.h		\
 	scaler-protocol.c			\
+	embed-client-protocol.h			\
+	embed-protocol.c			\
 	workspaces-client-protocol.h		\
 	workspaces-protocol.c			\
 	xdg-shell-client-protocol.h		\

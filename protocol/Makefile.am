@@ -7,6 +7,7 @@ protocol_sources =				\
 	workspaces.xml				\
 	text-cursor-position.xml		\
 	wayland-test.xml			\
+	embed.xml				\
 	xdg-shell.xml				\
 	scaler.xml
 

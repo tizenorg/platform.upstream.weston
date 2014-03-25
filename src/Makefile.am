@@ -22,6 +22,8 @@ weston_SOURCES =				\
 	data-device.c				\
 	filter.c				\
 	filter.h				\
+	embed.c					\
+	embed.h					\
 	screenshooter.c				\
 	screenshooter-protocol.c		\
 	screenshooter-server-protocol.h		\
@@ -38,6 +40,8 @@ weston_SOURCES =				\
 	workspaces-server-protocol.h		\
 	scaler-protocol.c			\
 	scaler-server-protocol.h		\
+	embed-protocol.c			\
+	embed-server-protocol.h			\
 	bindings.c				\
 	animation.c				\
 	noop-renderer.c				\
@@ -325,6 +329,8 @@ BUILT_SOURCES =					\
 	workspaces-protocol.c			\
 	scaler-server-protocol.h		\
 	scaler-protocol.c			\
+	embed-server-protocol.h			\
+	embed-protocol.c			\
 	git-version.h
 
 CLEANFILES = $(BUILT_SOURCES)

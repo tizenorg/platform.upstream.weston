@@ -53,6 +53,7 @@
 #endif
 
 #include "compositor.h"
+#include "embed.h"
 #include "scaler-server-protocol.h"
 #include "../shared/os-compatibility.h"
 #include "git-version.h"
@@ -345,6 +346,9 @@ region_init_infinite(pixman_region32_t *region)
 
 static struct weston_subsurface *
 weston_surface_to_subsurface(struct weston_surface *surface);
+
+static struct weston_subsurface *
+weston_subsurface_create_for_parent(struct weston_surface *parent);
 
 static void
 weston_view_output_move_handler(struct wl_listener *listener,
@@ -2715,7 +2719,7 @@ weston_subsurface_cache_fini(struct weston_subsurface *sub)
 	pixman_region32_fini(&sub->cached.input);
 }
 
-static void
+void
 weston_subsurface_unlink_parent(struct weston_subsurface *sub)
 {
 	wl_list_remove(&sub->parent_link);
@@ -2723,9 +2727,6 @@ weston_subsurface_unlink_parent(struct weston_subsurface *sub)
 	wl_list_remove(&sub->parent_destroy_listener.link);
 	sub->parent = NULL;
 }
-
-static void
-weston_subsurface_destroy(struct weston_subsurface *sub);
 
 static void
 subsurface_handle_surface_destroy(struct wl_listener *listener, void *data)
@@ -2776,33 +2777,30 @@ static void
 weston_subsurface_link_parent(struct weston_subsurface *sub,
 			      struct weston_surface *parent)
 {
-	sub->parent = parent;
 	sub->parent_destroy_listener.notify = subsurface_handle_parent_destroy;
 	wl_signal_add(&parent->destroy_signal,
 		      &sub->parent_destroy_listener);
-
-	wl_list_insert(&parent->subsurface_list, &sub->parent_link);
-	wl_list_insert(&parent->subsurface_list_pending,
-		       &sub->parent_link_pending);
 }
 
 static void
 weston_subsurface_link_surface(struct weston_subsurface *sub,
 			       struct weston_surface *surface)
 {
-	sub->surface = surface;
 	sub->surface_destroy_listener.notify =
 		subsurface_handle_surface_destroy;
 	wl_signal_add(&surface->destroy_signal,
 		      &sub->surface_destroy_listener);
 }
 
-static void
+void
 weston_subsurface_destroy(struct weston_subsurface *sub)
 {
 	struct weston_view *view, *next;
 
 	assert(sub->surface);
+
+	if (sub->embed)
+		embed_destroy_plug(sub);
 
 	if (sub->resource) {
 		assert(weston_surface_to_subsurface(sub->surface) == sub);
@@ -2839,35 +2837,46 @@ static const struct wl_subsurface_interface subsurface_implementation = {
 	subsurface_set_desync
 };
 
-static struct weston_subsurface *
-weston_subsurface_create(uint32_t id, struct weston_surface *surface,
+struct weston_subsurface *
+weston_subsurface_create(struct weston_surface *surface,
 			 struct weston_surface *parent)
 {
 	struct weston_subsurface *sub;
-	struct wl_client *client = wl_resource_get_client(surface->resource);
 
 	sub = calloc(1, sizeof *sub);
 	if (!sub)
 		return NULL;
 
+	sub->surface = surface;
+	sub->parent = parent;
 	wl_list_init(&sub->unused_views);
 
-	sub->resource =
-		wl_resource_create(client, &wl_subsurface_interface, 1, id);
-	if (!sub->resource) {
-		free(sub);
-		return NULL;
+	/* make sure the parent is in its own list */
+	if (wl_list_empty(&parent->subsurface_list)) {
+		if (!weston_subsurface_create_for_parent(parent)) {
+			free(sub);
+			return NULL;
+		}
 	}
 
-	wl_resource_set_implementation(sub->resource,
-				       &subsurface_implementation,
-				       sub, subsurface_resource_destroy);
-	weston_subsurface_link_surface(sub, surface);
-	weston_subsurface_link_parent(sub, parent);
+	return sub;
+}
+
+void
+
+weston_subsurface_create_complete(struct weston_subsurface *sub)
+{
+	weston_subsurface_link_surface(sub, sub->surface);
+	weston_subsurface_link_parent(sub, sub->parent);
+	wl_list_insert(&sub->parent->subsurface_list, &sub->parent_link);
+	wl_list_insert(&sub->parent->subsurface_list_pending,
+		       &sub->parent_link_pending);
+
 	weston_subsurface_cache_init(sub);
 	sub->synchronized = 1;
 
-	return sub;
+	sub->surface->configure = subsurface_configure;
+	sub->surface->configure_private = sub;
 }
 
 /* Create a dummy subsurface for having the parent itself in its
@@ -2882,8 +2891,9 @@ weston_subsurface_create_for_parent(struct weston_surface *parent)
 	if (!sub)
 		return NULL;
 
-	weston_subsurface_link_surface(sub, parent);
+	sub->surface = parent;
 	sub->parent = parent;
+	weston_subsurface_link_surface(sub, parent);
 	wl_list_insert(&parent->subsurface_list, &sub->parent_link);
 	wl_list_insert(&parent->subsurface_list_pending,
 		       &sub->parent_link_pending);
@@ -2937,22 +2947,23 @@ subcompositor_get_subsurface(struct wl_client *client,
 		return;
 	}
 
-	/* make sure the parent is in its own list */
-	if (wl_list_empty(&parent->subsurface_list)) {
-		if (!weston_subsurface_create_for_parent(parent)) {
-			wl_resource_post_no_memory(resource);
-			return;
-		}
-	}
-
-	sub = weston_subsurface_create(id, surface, parent);
+	sub = weston_subsurface_create(surface, parent);
 	if (!sub) {
 		wl_resource_post_no_memory(resource);
 		return;
 	}
 
-	surface->configure = subsurface_configure;
-	surface->configure_private = sub;
+	sub->resource =
+		wl_resource_create(client, &wl_subsurface_interface, 1, id);
+	if (!sub->resource) {
+		free(sub);
+		return;
+	}
+	wl_resource_set_implementation(sub->resource,
+	                               &subsurface_implementation,
+	                               sub, subsurface_resource_destroy);
+
+	weston_subsurface_create_complete(sub);
 }
 
 static void
@@ -3682,6 +3693,9 @@ weston_compositor_init(struct weston_compositor *ec,
 	wl_list_init(&ec->touch_binding_list);
 	wl_list_init(&ec->axis_binding_list);
 	wl_list_init(&ec->debug_binding_list);
+
+	if(!embed_init(ec->wl_display))
+		return -1;
 
 	weston_plane_init(&ec->primary_plane, ec, 0, 0);
 	weston_compositor_stack_plane(ec, &ec->primary_plane, NULL);

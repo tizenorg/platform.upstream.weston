@@ -691,6 +691,10 @@ struct weston_subsurface {
 	struct wl_list parent_link;
 	struct wl_list parent_link_pending;
 
+	/* can be NULL */
+	struct weston_embed *embed;
+	struct weston_hole *hole;
+
 	struct {
 		int32_t x;
 		int32_t y;
@@ -1392,6 +1396,19 @@ weston_transformed_region(int width, int height,
 
 void *
 weston_load_module(const char *name, const char *entrypoint);
+
+struct weston_subsurface *
+weston_subsurface_create(struct weston_surface *surface,
+	                 struct weston_surface *parent);
+
+void
+weston_subsurface_create_complete(struct weston_subsurface *sub);
+
+void
+weston_subsurface_unlink_parent(struct weston_subsurface *sub);
+
+void
+weston_subsurface_destroy(struct weston_subsurface *sub);
 
 #ifdef  __cplusplus
 }

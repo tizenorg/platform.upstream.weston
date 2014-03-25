@@ -111,6 +111,8 @@ install -m 755 clients/weston-subsurfaces %{buildroot}%{_bindir}
 install -m 755 clients/weston-transformed %{buildroot}%{_bindir}
 install -m 755 clients/weston-fullscreen %{buildroot}%{_bindir}
 install -m 755 clients/weston-calibrator %{buildroot}%{_bindir}
+install -m 755 clients/weston-embed-hole %{buildroot}%{_bindir}
+install -m 755 clients/weston-embed-plug %{buildroot}%{_bindir}
 
 install -d %{buildroot}%{_unitdir_user}
 install -m 644 %{SOURCE1} %{buildroot}%{_unitdir_user}/weston.target
@@ -165,5 +167,7 @@ getent group weston-launch >/dev/null || %{_sbindir}/groupadd -o -r weston-launc
 %_bindir/weston-transformed
 %_bindir/weston-fullscreen
 %_bindir/weston-calibrator
+%_bindir/weston-embed-hole
+%_bindir/weston-embed-plug
 
 %changelog
