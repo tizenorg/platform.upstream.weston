@@ -1166,10 +1166,10 @@ choose_mode (struct drm_output *output, struct weston_mode *target_mode)
 	wl_list_for_each(mode, &output->base.mode_list, base.link) {
 		if (mode->mode_info.hdisplay == target_mode->width &&
 		    mode->mode_info.vdisplay == target_mode->height) {
-			if (mode->mode_info.vrefresh == target_mode->refresh || 
+			if (mode->mode_info.vrefresh == target_mode->refresh ||
           		    target_mode->refresh == 0) {
 				return mode;
-			} else if (!tmp_mode) 
+			} else if (!tmp_mode)
 				tmp_mode = mode;
 		}
 	}
@@ -1870,6 +1870,7 @@ create_output_for_connector(struct drm_compositor *ec,
 	const char *type_name;
 	enum output_config config;
 	uint32_t transform;
+	int default_output;
 
 	i = find_crtc_for_connector(ec, resources, connector);
 	if (i < 0) {
@@ -1918,6 +1919,8 @@ create_output_for_connector(struct drm_compositor *ec,
 	weston_config_section_get_string(section, "transform", &s, "normal");
 	transform = parse_transform(s, output->base.name);
 	free(s);
+	weston_config_section_get_int(section, "default_output",
+                    &default_output, 0);
 
 	weston_config_section_get_string(section, "seat", &s, "");
 	setup_output_seat_constraint(ec, &output->base, s);
@@ -2035,6 +2038,8 @@ create_output_for_connector(struct drm_compositor *ec,
 	}
 
 	wl_list_insert(ec->base.output_list.prev, &output->base.link);
+    if (default_output)
+        ec->base.default_output = &output->base;
 
 	find_and_parse_output_edid(ec, output, connector);
 	if (connector->connector_type == DRM_MODE_CONNECTOR_LVDS)
@@ -2286,7 +2291,7 @@ update_outputs(struct drm_compositor *ec, struct udev_device *drm_device)
 		}
 	}
 
-	/* FIXME: handle zero outputs, without terminating */	
+	/* FIXME: handle zero outputs, without terminating */
 	if (ec->connector_allocator == 0)
 		wl_display_terminate(ec->base.wl_display);
 }
@@ -2380,7 +2385,7 @@ drm_compositor_set_modes(struct drm_compositor *compositor)
 		if (ret < 0) {
 			weston_log(
 				"failed to set mode %dx%d for output at %d,%d: %m\n",
-				drm_mode->base.width, drm_mode->base.height, 
+				drm_mode->base.width, drm_mode->base.height,
 				output->base.x, output->base.y);
 		}
 	}
