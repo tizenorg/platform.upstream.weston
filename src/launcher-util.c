@@ -160,7 +160,7 @@ weston_launcher_open(struct weston_launcher *launcher,
 	msg.msg_iovlen = 1;
 	msg.msg_control = control;
 	msg.msg_controllen = sizeof control;
-	
+
 	do {
 		len = recvmsg(launcher->fd, &msg, MSG_CMSG_CLOEXEC);
 	} while (len < 0 && errno == EINTR);
@@ -404,7 +404,7 @@ weston_launcher_connect(struct weston_compositor *compositor, int tty,
 					  seat_id, tty);
 		if (r < 0) {
 			launcher->logind = NULL;
-			if (geteuid() == 0) {
+			if (geteuid() <= 499) { /* 499 = SYS_UID_MAX in login.defs, but it should be parsed */
 				if (setup_tty(launcher, tty) == -1) {
 					free(launcher);
 					return NULL;
