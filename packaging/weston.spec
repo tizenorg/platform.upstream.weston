@@ -30,6 +30,7 @@ BuildRequires:  xz
 BuildRequires:  pkgconfig(cairo)
 BuildRequires:  pkgconfig(cairo-egl) >= 1.11.3
 BuildRequires:  pkgconfig(egl) >= 7.10
+BuildRequires:  pkgconfig(freerdp)
 BuildRequires:  pkgconfig(gbm)
 BuildRequires:  pkgconfig(gio-2.0)
 BuildRequires:  pkgconfig(glesv2)
@@ -83,12 +84,19 @@ This package provides a set of example wayland clients useful for
 validating the functionality of wayland with very little dependencies
 on other system components.
 
+%package rdp
+Summary: RDP compositor for %{name}
+Group:   Graphics & UI Framework/Development
+%description rdp
+This package provides a RDP compositor allowing to do remote rendering
+through the network.
+
 %prep
 %setup -q
 cp %{SOURCE1001} .
 
 %build
-%autogen --disable-static --disable-setuid-install  --enable-simple-clients --enable-clients --disable-libunwind --disable-xwayland --disable-xwayland-test --disable-x11-compositor --disable-rpi-compositor %{?extra_config_options:%extra_config_options}
+%autogen --disable-static --disable-setuid-install  --enable-simple-clients --enable-clients --disable-libunwind --disable-xwayland --disable-xwayland-test --disable-x11-compositor --disable-rpi-compositor --enable-rdp-compositor %{?extra_config_options:%extra_config_options}
 make %{?_smp_mflags}
 
 %install
@@ -138,7 +146,12 @@ getent group weston-launch >/dev/null || %{_sbindir}/groupadd -o -r weston-launc
 %attr(4755,root,root) %{_bindir}/weston-launch
 %{_bindir}/weston-terminal
 %_libexecdir/weston-*
-%_libdir/weston
+%_libdir/weston/desktop-shell.so
+%_libdir/weston/gl-renderer.so
+%_libdir/weston/drm-backend.so
+%_libdir/weston/fbdev-backend.so
+%_libdir/weston/headless-backend.so
+%_libdir/weston/wayland-backend.so
 %_datadir/weston
 %{_unitdir_user}/weston.target
 
@@ -165,5 +178,9 @@ getent group weston-launch >/dev/null || %{_sbindir}/groupadd -o -r weston-launc
 %_bindir/weston-transformed
 %_bindir/weston-fullscreen
 %_bindir/weston-calibrator
+
+%files rdp
+%manifest %{name}.manifest
+%_libdir/weston/rdp-backend.so
 
 %changelog
