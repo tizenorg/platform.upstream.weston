@@ -39,7 +39,7 @@ This package provides a RDP compositor allowing to do remote rendering
 through the network.
 
 %prep
-%setup -q
+%setup -q -n weston-%{version}
 cp %{SOURCE1} .
 
 %build
