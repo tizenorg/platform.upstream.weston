@@ -3,14 +3,14 @@
 Name:           weston-rdp
 Version:        1.4.0
 Release:        0
-Summary:	RDP compositor for Weston
+Summary:        RDP compositor for Weston
 License:        MIT
 Group:          Graphics & UI Framework/Wayland Window System
 Url:            http://weston.freedesktop.org/
 
 #Git-Clone:	git://anongit.freedesktop.org/wayland/weston
 #Git-Web:	http://cgit.freedesktop.org/wayland/weston/
-Source0:         %name-%version.tar.xz
+Source0:         weston-%version.tar.xz
 Source1: 	weston-rdp.manifest
 BuildRequires:	autoconf >= 2.64, automake >= 1.11
 BuildRequires:  expat-devel
