@@ -1,0 +1,13 @@
+diff --git a/src/launcher-util.c b/src/launcher-util.c
+index 1b63458..47d6eda 100644
+--- a/src/launcher-util.c
++++ b/src/launcher-util.c
+@@ -404,7 +404,7 @@ weston_launcher_connect(struct weston_compositor *compositor, int tty,
+ 					  seat_id, tty);
+ 		if (r < 0) {
+ 			launcher->logind = NULL;
+-			if (geteuid() == 0) {
++			if (geteuid() <= 499) { /* 499 = SYS_UID_MAX in login.defs, but it should be parsed */
+ 				if (setup_tty(launcher, tty) == -1) {
+ 					free(launcher);
+ 					return NULL;
