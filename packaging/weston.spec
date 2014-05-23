@@ -1,9 +1,14 @@
 %bcond_with wayland
 %bcond_with mobile
+%bcond_with rdp
 %define _unitdir_user /usr/lib/systemd/user
 
 %if %{with mobile}
-%define extra_config_options --disable-drm-compositor
+%define extra_config_options1 --disable-drm-compositor
+%endif
+
+%if %{with rdp}
+%define extra_config_options2 --enable-rdp-compositor
 %endif
 
 Name:           weston
@@ -30,6 +35,9 @@ BuildRequires:  xz
 BuildRequires:  pkgconfig(cairo)
 BuildRequires:  pkgconfig(cairo-egl) >= 1.11.3
 BuildRequires:  pkgconfig(egl) >= 7.10
+%if %{with rdp}
+BuildRequires:  pkgconfig(freerdp)
+%endif
 BuildRequires:  pkgconfig(gbm)
 BuildRequires:  pkgconfig(gio-2.0)
 BuildRequires:  pkgconfig(glesv2)
@@ -83,12 +91,21 @@ This package provides a set of example wayland clients useful for
 validating the functionality of wayland with very little dependencies
 on other system components.
 
+%if %{with rdp}
+%package rdp
+Summary: RDP compositor for %{name}
+Group:   Graphics & UI Framework/Development
+%description rdp
+This package provides a RDP compositor allowing to do remote rendering
+through the network.
+%endif
+
 %prep
 %setup -q
 cp %{SOURCE1001} .
 
 %build
-%autogen --disable-static --disable-setuid-install  --enable-simple-clients --enable-clients --disable-libunwind --disable-xwayland --disable-xwayland-test --disable-x11-compositor --disable-rpi-compositor %{?extra_config_options:%extra_config_options}
+%autogen --disable-static --disable-setuid-install  --enable-simple-clients --enable-clients --disable-libunwind --disable-xwayland --disable-xwayland-test --disable-x11-compositor --disable-rpi-compositor %{?extra_config_options1:%extra_config_options1} %{?extra_config_options2:%extra_config_options2}
 make %{?_smp_mflags}
 
 %install
@@ -138,7 +155,12 @@ getent group weston-launch >/dev/null || %{_sbindir}/groupadd -o -r weston-launc
 %attr(4755,root,root) %{_bindir}/weston-launch
 %{_bindir}/weston-terminal
 %_libexecdir/weston-*
-%_libdir/weston
+%_libdir/weston/desktop-shell.so
+%_libdir/weston/drm-backend.so
+%_libdir/weston/fbdev-backend.so
+%_libdir/weston/headless-backend.so
+%_libdir/weston/wayland-backend.so
+%_libdir/weston/gl-renderer.so
 %_datadir/weston
 %{_unitdir_user}/weston.target
 
@@ -165,5 +187,11 @@ getent group weston-launch >/dev/null || %{_sbindir}/groupadd -o -r weston-launc
 %_bindir/weston-transformed
 %_bindir/weston-fullscreen
 %_bindir/weston-calibrator
+
+%if %{with rdp}
+%files rdp
+%manifest %{name}.manifest
+%_libdir/weston/rdp-backend.so
+%endif
 
 %changelog
