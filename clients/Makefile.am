@@ -54,7 +54,7 @@ weston_simple_egl_LDADD = $(SIMPLE_EGL_CLIENT_LIBS) -lm
 endif
 
 if BUILD_CLIENTS
-install_clients = weston-terminal weston-info
+install_clients = weston-terminal weston-info weston-qa-listsurfaces
 
 libexec_PROGRAMS =				\
 	weston-desktop-shell			\
@@ -113,6 +113,9 @@ weston_screenshooter_LDADD = $(CLIENT_LIBS)
 
 weston_terminal_SOURCES = terminal.c
 weston_terminal_LDADD = libtoytoolkit.la -lutil
+
+weston_qa_listsurfaces_SOURCES = qa-listsurfaces.c qa-protocol.c
+weston_qa_listsurfaces_LDADD = $(CLIENT_LIBS)
 
 weston_image_SOURCES = image.c
 weston_image_LDADD = libtoytoolkit.la
@@ -221,6 +224,8 @@ BUILT_SOURCES =					\
 	scaler-protocol.c			\
 	workspaces-client-protocol.h		\
 	workspaces-protocol.c			\
+	qa-client-protocol.h			\
+	qa-protocol.c				\
 	xdg-shell-client-protocol.h		\
 	xdg-shell-protocol.c
 

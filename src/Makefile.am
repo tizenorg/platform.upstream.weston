@@ -36,6 +36,8 @@ weston_SOURCES =				\
 	input-method-server-protocol.h		\
 	workspaces-protocol.c			\
 	workspaces-server-protocol.h		\
+	qa-protocol.c				\
+	qa-server-protocol.h			\
 	scaler-protocol.c			\
 	scaler-server-protocol.h		\
 	bindings.c				\
@@ -323,6 +325,8 @@ BUILT_SOURCES =					\
 	input-method-server-protocol.h		\
 	workspaces-server-protocol.h		\
 	workspaces-protocol.c			\
+	qa-server-protocol.h			\
+	qa-protocol.c				\
 	scaler-server-protocol.h		\
 	scaler-protocol.c			\
 	git-version.h
