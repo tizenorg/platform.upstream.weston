@@ -1305,14 +1305,17 @@ qa_list_surfaces(struct wl_client *client,
 {
 	struct desktop_shell *shell = wl_resource_get_user_data(resource);
 	struct shell_surface *shsurf;
-	char *list = "";
+	char *list;
 
+	list = strdup("");
 	wl_list_for_each(shsurf, &shell->surface_list, link) {
 		if (shsurf->title)
 			asprintf(&list, "%s\n %s", list, shsurf->title);
 	}
 
 	qa_send_surfaces_listed(resource, list);
+
+	free (list);
 }
 
 static const struct qa_interface qa_implementation = {
@@ -5468,14 +5471,17 @@ surface_list_binding(struct weston_seat *seat, uint32_t time, uint32_t key, void
 {
 	struct desktop_shell *shell = data;
 	struct shell_surface *shsurf;
-	char *list = "";
+	char *list;
 
+	list = strdup("");
 	wl_list_for_each(shsurf, &shell->surface_list, link) {
 		if (shsurf->title)
 			asprintf(&list, "%s\n %s", list, shsurf->title);
 	}
 
 	weston_log ("\n\nSurfaces list :\n-------------%s\n", list);
+
+	free(list);
 }
 
 static void
