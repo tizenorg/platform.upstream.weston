@@ -1342,7 +1342,7 @@ bind_qa(struct wl_client *client,
 
 	wl_resource_set_implementation(resource,
 	                               &qa_implementation,
-	                               shell, unbind_resource);
+	                               shell, NULL);
 }
 
 static void

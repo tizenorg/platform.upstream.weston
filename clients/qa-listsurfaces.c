@@ -62,10 +62,7 @@ int main (int argc, char *argv[])
 
 
 	qa_list_surfaces (display->qa);
-
-        int result = 0;
-        while (result != -1)
-                result = wl_display_dispatch (display->display);
+	wl_display_dispatch (display->display);
 
 	qa_destroy (display->qa);
 	wl_registry_destroy (display->registry);
