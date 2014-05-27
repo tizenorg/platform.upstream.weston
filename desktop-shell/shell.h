@@ -188,6 +188,8 @@ struct desktop_shell {
 	struct wl_listener output_create_listener;
 	struct wl_list output_list;
 
+	struct wl_list surface_list;
+
 	char *client;
 };
 
