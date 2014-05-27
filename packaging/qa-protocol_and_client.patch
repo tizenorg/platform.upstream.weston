@@ -1,0 +1,247 @@
+diff --git a/clients/Makefile.am b/clients/Makefile.am
+index 6052503..a5ad16a 100644
+--- a/clients/Makefile.am
++++ b/clients/Makefile.am
+@@ -79,7 +79,8 @@ clients_programs =				\
+ 	weston-scaler				\
+ 	$(subsurfaces)				\
+ 	$(full_gl_client_programs)		\
+-	$(cairo_glesv2_programs)
++	$(cairo_glesv2_programs)		\
++	weston-qa-listsurfaces
+ 
+ noinst_LTLIBRARIES = libtoytoolkit.la
+ 
+@@ -114,6 +115,9 @@ weston_screenshooter_LDADD = $(CLIENT_LIBS)
+ weston_terminal_SOURCES = terminal.c
+ weston_terminal_LDADD = libtoytoolkit.la -lutil
+ 
++weston_qa_listsurfaces_SOURCES = qa-listsurfaces.c qa-protocol.c
++weston_qa_listsurfaces_LDADD = $(CLIENT_LIBS)
++
+ weston_image_SOURCES = image.c
+ weston_image_LDADD = libtoytoolkit.la
+ 
+@@ -221,6 +225,8 @@ BUILT_SOURCES =					\
+ 	scaler-protocol.c			\
+ 	workspaces-client-protocol.h		\
+ 	workspaces-protocol.c			\
++	qa-client-protocol.h			\
++	qa-protocol.c				\
+ 	xdg-shell-client-protocol.h		\
+ 	xdg-shell-protocol.c
+ 
+diff --git a/clients/qa-listsurfaces.c b/clients/qa-listsurfaces.c
+new file mode 100644
+index 0000000..31555ce
+--- /dev/null
++++ b/clients/qa-listsurfaces.c
+@@ -0,0 +1,74 @@
++#include <stdio.h>
++#include <string.h>
++#include <stdlib.h>
++#include <assert.h>
++
++#include <wayland-client.h>
++#include "qa-client-protocol.h"
++
++struct display {
++	struct wl_display *display;
++	struct wl_registry *registry;
++	struct qa *qa;
++};
++
++
++static void
++surfaces_listed (void *data, struct qa *qa, const char *list)
++{
++	printf ("SURFACES LIST : %s\n", list);
++}
++
++static const struct qa_listener qa_listener = {
++        surfaces_listed
++};
++
++
++static void
++registry_handle_global (void *data, struct wl_registry *registry, uint32_t id, const char *interface, uint32_t version)
++{
++	struct display *d = data;
++
++	if (!strcmp(interface, "qa")) {
++                d->qa = wl_registry_bind (registry, id, &qa_interface, 1);
++		qa_add_listener (d->qa, &qa_listener, d);
++        }
++}
++
++static void
++registry_handle_global_remove (void *data, struct wl_registry *registry, uint32_t name)
++{
++}
++
++static const struct wl_registry_listener registry_listener = {
++	registry_handle_global,
++	registry_handle_global_remove
++};
++
++
++int main (int argc, char *argv[])
++{
++	struct display *display;
++	display = malloc (sizeof *display);
++
++	display->display = wl_display_connect (NULL);
++	assert (display->display != NULL);
++
++	display->registry = wl_display_get_registry (display->display);
++	wl_registry_add_listener (display->registry, &registry_listener, display);
++
++	wl_display_roundtrip (display->display);
++	assert (display->qa != NULL);
++
++
++	qa_list_surfaces (display->qa);
++	wl_display_dispatch (display->display);
++
++	qa_destroy (display->qa);
++	wl_registry_destroy (display->registry);
++	wl_display_flush (display->display);
++	wl_display_disconnect (display->display);
++
++
++	return 0;
++}
+diff --git a/desktop-shell/shell.c b/desktop-shell/shell.c
+index 35da028..63b5e58 100644
+--- a/desktop-shell/shell.c
++++ b/desktop-shell/shell.c
+@@ -39,6 +39,7 @@
+ #include "workspaces-server-protocol.h"
+ #include "../shared/config-parser.h"
+ #include "xdg-shell-server-protocol.h"
++#include "qa-server-protocol.h"
+ 
+ #define DEFAULT_NUM_WORKSPACES 1
+ #define DEFAULT_WORKSPACE_CHANGE_ANIMATION_LENGTH 200
+@@ -1299,12 +1300,55 @@ static const struct workspace_manager_interface workspace_manager_implementation
+ };
+ 
+ static void
++qa_list_surfaces(struct wl_client *client,
++	         struct wl_resource *resource)
++{
++	struct desktop_shell *shell = wl_resource_get_user_data(resource);
++	struct shell_surface *shsurf;
++	char *list;
++
++	list = strdup("");
++	wl_list_for_each(shsurf, &shell->surface_list, link) {
++		if (shsurf->title)
++			asprintf(&list, "%s\n %s", list, shsurf->title);
++	}
++
++	qa_send_surfaces_listed(resource, list);
++
++	free(list);
++}
++
++static const struct qa_interface qa_implementation = {
++	qa_list_surfaces
++};
++
++static void
+ unbind_resource(struct wl_resource *resource)
+ {
+ 	wl_list_remove(wl_resource_get_link(resource));
+ }
+ 
+ static void
++bind_qa(struct wl_client *client,
++	void *data, uint32_t version, uint32_t id)
++{
++	struct desktop_shell *shell = data;
++	struct wl_resource *resource;
++
++	resource = wl_resource_create(client,
++	                              &qa_interface, 1, id);
++
++	if (resource == NULL) {
++		weston_log("couldn't add qa object");
++		return;
++	}
++
++	wl_resource_set_implementation(resource,
++	                               &qa_implementation,
++	                               shell, NULL);
++}
++
++static void
+ bind_workspace_manager(struct wl_client *client,
+ 		       void *data, uint32_t version, uint32_t id)
+ {
+@@ -5818,6 +5862,10 @@ module_init(struct weston_compositor *ec,
+ 			     shell, bind_workspace_manager) == NULL)
+ 		return -1;
+ 
++	if (wl_global_create(ec->wl_display, &qa_interface, 1,
++	                     shell, bind_qa) == NULL)
++		return -1;
++
+ 	shell->child.deathstamp = weston_compositor_get_time();
+ 
+ 	setup_output_destroy_handler(ec, shell);
+diff --git a/protocol/Makefile.am b/protocol/Makefile.am
+index 5e331a7..b6a6b27 100644
+--- a/protocol/Makefile.am
++++ b/protocol/Makefile.am
+@@ -8,7 +8,8 @@ protocol_sources =				\
+ 	text-cursor-position.xml		\
+ 	wayland-test.xml			\
+ 	xdg-shell.xml				\
+-	scaler.xml
++	scaler.xml				\
++	qa.xml
+ 
+ if HAVE_XMLLINT
+ .PHONY: validate
+diff --git a/protocol/qa.xml b/protocol/qa.xml
+new file mode 100644
+index 0000000..96cbd88
+--- /dev/null
++++ b/protocol/qa.xml
+@@ -0,0 +1,13 @@
++<protocol name="qa">
++
++  <interface name="qa" version="1">
++    <request name="list_surfaces">
++    </request>
++
++    <event name="surfaces_listed">
++      <arg name="list" type="string"/>
++    </event>
++
++  </interface>
++
++</protocol>
+diff --git a/src/Makefile.am b/src/Makefile.am
+index 446639c..1896cd7 100644
+--- a/src/Makefile.am
++++ b/src/Makefile.am
+@@ -36,6 +36,8 @@ weston_SOURCES =				\
+ 	input-method-server-protocol.h		\
+ 	workspaces-protocol.c			\
+ 	workspaces-server-protocol.h		\
++	qa-protocol.c				\
++	qa-server-protocol.h			\
+ 	scaler-protocol.c			\
+ 	scaler-server-protocol.h		\
+ 	bindings.c				\
+@@ -323,6 +325,8 @@ BUILT_SOURCES =					\
+ 	input-method-server-protocol.h		\
+ 	workspaces-server-protocol.h		\
+ 	workspaces-protocol.c			\
++	qa-server-protocol.h			\
++	qa-protocol.c				\
+ 	scaler-server-protocol.h		\
+ 	scaler-protocol.c			\
+ 	git-version.h

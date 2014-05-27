@@ -1,0 +1,86 @@
+diff --git a/src/gl-renderer.c b/src/gl-renderer.c
+index dca2e05..64e9298 100644
+--- a/src/gl-renderer.c
++++ b/src/gl-renderer.c
+@@ -99,8 +99,10 @@ struct gl_renderer {
+ 	struct weston_renderer base;
+ 	int fragment_shader_debug;
+ 	int fan_debug;
++	int fps_debug;
+ 	struct weston_binding *fragment_binding;
+ 	struct weston_binding *fan_binding;
++	struct weston_binding *fps_binding;
+ 
+ 	EGLDisplay egl_display;
+ 	EGLContext egl_context;
+@@ -126,6 +128,9 @@ struct gl_renderer {
+ 
+ 	int has_egl_buffer_age;
+ 
++	struct timeval tv;
++	int num_frames;
++
+ 	struct gl_shader texture_shader_rgba;
+ 	struct gl_shader texture_shader_rgbx;
+ 	struct gl_shader texture_shader_egl_external;
+@@ -814,6 +819,7 @@ gl_renderer_repaint_output(struct weston_output *output,
+ 	struct gl_renderer *gr = get_renderer(compositor);
+ 	EGLBoolean ret;
+ 	static int errored;
++	struct timeval cur_tv;
+ 	pixman_region32_t buffer_damage, total_damage;
+ 
+ 	/* Calculate the viewport */
+@@ -839,6 +845,21 @@ gl_renderer_repaint_output(struct weston_output *output,
+ 		pixman_region32_fini(&undamaged);
+ 	}
+ 
++	if (gr->fps_debug) {
++		gr->num_frames++;
++
++		gettimeofday(&cur_tv, NULL);
++		cur_tv.tv_sec -= gr->tv.tv_sec;
++		cur_tv.tv_usec -= gr->tv.tv_usec;
++
++		if ((cur_tv.tv_sec*1000000 + cur_tv.tv_usec) >= 1000000) {
++			weston_log("FPS : %lf\n", (double)gr->num_frames /
++			                          ((double)cur_tv.tv_sec + (double)cur_tv.tv_usec/1000000.0));
++			gr->num_frames = 0;
++			gettimeofday(&gr->tv, NULL);
++		}
++	}
++
+ 	pixman_region32_init(&total_damage);
+ 	pixman_region32_init(&buffer_damage);
+ 
+@@ -1866,6 +1887,17 @@ fan_debug_repaint_binding(struct weston_seat *seat, uint32_t time, uint32_t key,
+ 	weston_compositor_damage_all(compositor);
+ }
+ 
++static void
++fps_debug_binding(struct weston_seat *seat, uint32_t time, uint32_t key,
++		      void *data)
++{
++	struct weston_compositor *compositor = data;
++	struct gl_renderer *gr = get_renderer(compositor);
++
++	gr->fps_debug = !gr->fps_debug;
++	gr->num_frames = 0;
++}
++
+ static int
+ gl_renderer_setup(struct weston_compositor *ec, EGLSurface egl_surface)
+ {
+@@ -1973,6 +2005,12 @@ gl_renderer_setup(struct weston_compositor *ec, EGLSurface egl_surface)
+ 		weston_compositor_add_debug_binding(ec, KEY_F,
+ 						    fan_debug_repaint_binding,
+ 						    ec);
++	gr->fps_binding =
++		weston_compositor_add_debug_binding(ec, KEY_P,
++						    fps_debug_binding,
++						    ec);
++
++	gettimeofday(&gr->tv, NULL);
+ 
+ 	weston_log("GL ES 2 renderer features:\n");
+ 	weston_log_continue(STAMP_SPACE "read-back format: %s\n",

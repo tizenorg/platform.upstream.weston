@@ -27,6 +27,9 @@ Source1001: 	weston.manifest
 Source1002:	shell-make-panel-optional-panel-false-in-weston.ini.patch
 Source1003:	shell-1.4.0-Hack-to-allow-selecting-a-default-output.patch
 Source1004:	allow-to-start-weston-with-system-user.patch
+Source1005:	qa-fps_binding.patch
+Source1006:	qa-surfaces_list_binding.patch
+Source1007:	qa-protocol_and_client.patch
 BuildRequires:	autoconf >= 2.64, automake >= 1.11
 BuildRequires:  expat-devel
 BuildRequires:  libjpeg-devel
@@ -103,6 +106,14 @@ This package provides a RDP compositor allowing to do remote rendering
 through the network.
 %endif
 
+%if "%{profile}" == "common"
+%package qatools
+Summary: QA tools for %{name}
+Group:   Graphics & UI Framework/Development
+%description qatools
+This package provides tools for Q&A testing.
+%endif
+
 %prep
 %setup -q
 cp %{SOURCE1001} .
@@ -112,6 +123,9 @@ cp %{SOURCE1002} %{SOURCE1003} %{SOURCE1004} .
 patch -p1 < %{SOURCE1002}
 patch -p1 < %{SOURCE1003}
 patch -p1 < %{SOURCE1004}
+patch -p1 < %{SOURCE1005}
+patch -p1 < %{SOURCE1006}
+patch -p1 < %{SOURCE1007}
 %endif
 
 %build
@@ -138,6 +152,10 @@ install -m 755 clients/weston-subsurfaces %{buildroot}%{_bindir}
 install -m 755 clients/weston-transformed %{buildroot}%{_bindir}
 install -m 755 clients/weston-fullscreen %{buildroot}%{_bindir}
 install -m 755 clients/weston-calibrator %{buildroot}%{_bindir}
+
+%if "%{profile}" == "common"
+install -m 755 clients/weston-qa-listsurfaces %{buildroot}%{_bindir}
+%endif
 
 install -d %{buildroot}%{_unitdir_user}
 install -m 644 %{SOURCE1} %{buildroot}%{_unitdir_user}/weston.target
@@ -202,6 +220,12 @@ getent group weston-launch >/dev/null || %{_sbindir}/groupadd -o -r weston-launc
 %files rdp
 %manifest %{name}.manifest
 %_libdir/weston/rdp-backend.so
+%endif
+
+%if "%{profile}" == "common"
+%files qatools
+%manifest %{name}.manifest
+%_bindir/weston-qa-listsurfaces
 %endif
 
 %changelog

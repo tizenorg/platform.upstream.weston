@@ -1,0 +1,70 @@
+diff --git a/desktop-shell/shell.c b/desktop-shell/shell.c
+index 8cd4401..d6a1472 100644
+--- a/desktop-shell/shell.c
++++ b/desktop-shell/shell.c
+@@ -3081,6 +3081,8 @@ create_common_surface(void *shell, struct weston_surface *surface,
+ 
+ 	shsurf->client = client;
+ 
++	wl_list_insert(&shsurf->shell->surface_list, &shsurf->link);
++
+ 	return shsurf;
+ }
+ 
+@@ -5421,6 +5423,24 @@ debug_binding(struct weston_seat *seat, uint32_t time, uint32_t key, void *data)
+ }
+ 
+ static void
++surface_list_binding(struct weston_seat *seat, uint32_t time, uint32_t key, void *data)
++{
++	struct desktop_shell *shell = data;
++	struct shell_surface *shsurf;
++	char *list;
++
++	list = strdup("");
++	wl_list_for_each(shsurf, &shell->surface_list, link) {
++		if (shsurf->title)
++			asprintf(&list, "%s\n %s", list, shsurf->title);
++	}
++
++	weston_log ("\n\nSurfaces list :\n-------------%s\n", list);
++
++	free(list);
++}
++
++static void
+ force_kill_binding(struct weston_seat *seat, uint32_t time, uint32_t key,
+ 		   void *data)
+ {
+@@ -5702,6 +5721,9 @@ shell_add_bindings(struct weston_compositor *ec, struct desktop_shell *shell)
+ 	/* Debug bindings */
+ 	weston_compositor_add_key_binding(ec, KEY_SPACE, mod | MODIFIER_SHIFT,
+ 					  debug_binding, shell);
++
++	weston_compositor_add_debug_binding(ec, KEY_L,
++	                                    surface_list_binding, shell);
+ }
+ 
+ WL_EXPORT int
+@@ -5748,6 +5770,8 @@ module_init(struct weston_compositor *ec,
+ 	wl_array_init(&shell->workspaces.array);
+ 	wl_list_init(&shell->workspaces.client_list);
+ 
++	wl_list_init(&shell->surface_list);
++
+ 	if (input_panel_setup(shell) < 0)
+ 		return -1;
+ 
+diff --git a/desktop-shell/shell.h b/desktop-shell/shell.h
+index e89fc9c..12d7961 100644
+--- a/desktop-shell/shell.h
++++ b/desktop-shell/shell.h
+@@ -188,6 +188,8 @@ struct desktop_shell {
+ 	struct wl_listener output_create_listener;
+ 	struct wl_list output_list;
+ 
++	struct wl_list surface_list;
++
+ 	char *client;
+ };
+ 
