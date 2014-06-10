@@ -12,7 +12,7 @@
 %endif
 
 Name:           weston
-Version:        1.4.0
+Version:        1.5.0
 Release:        0
 Summary:        Wayland Compositor Infrastructure
 License:        MIT
@@ -122,22 +122,23 @@ make %{?_smp_mflags}
 %make_install
 
 # install example clients
-install -m 755 clients/weston-simple-touch %{buildroot}%{_bindir}
-install -m 755 clients/weston-simple-shm %{buildroot}%{_bindir}
-install -m 755 clients/weston-simple-egl %{buildroot}%{_bindir}
-install -m 755 clients/weston-flower %{buildroot}%{_bindir}
-install -m 755 clients/weston-image %{buildroot}%{_bindir}
-install -m 755 clients/weston-cliptest %{buildroot}%{_bindir}
-install -m 755 clients/weston-dnd %{buildroot}%{_bindir}
-install -m 755 clients/weston-editor %{buildroot}%{_bindir}
-install -m 755 clients/weston-smoke %{buildroot}%{_bindir}
-install -m 755 clients/weston-resizor %{buildroot}%{_bindir}
-install -m 755 clients/weston-eventdemo %{buildroot}%{_bindir}
-install -m 755 clients/weston-clickdot %{buildroot}%{_bindir}
-install -m 755 clients/weston-subsurfaces %{buildroot}%{_bindir}
-install -m 755 clients/weston-transformed %{buildroot}%{_bindir}
-install -m 755 clients/weston-fullscreen %{buildroot}%{_bindir}
-install -m 755 clients/weston-calibrator %{buildroot}%{_bindir}
+install -m 755 weston-calibrator %{buildroot}%{_bindir}
+install -m 755 weston-simple-touch %{buildroot}%{_bindir}
+install -m 755 weston-simple-shm %{buildroot}%{_bindir}
+install -m 755 weston-simple-egl %{buildroot}%{_bindir}
+install -m 755 weston-flower %{buildroot}%{_bindir}
+install -m 755 weston-image %{buildroot}%{_bindir}
+install -m 755 weston-cliptest %{buildroot}%{_bindir}
+install -m 755 weston-dnd %{buildroot}%{_bindir}
+install -m 755 weston-editor %{buildroot}%{_bindir}
+install -m 755 weston-smoke %{buildroot}%{_bindir}
+install -m 755 weston-resizor %{buildroot}%{_bindir}
+install -m 755 weston-eventdemo %{buildroot}%{_bindir}
+install -m 755 weston-clickdot %{buildroot}%{_bindir}
+install -m 755 weston-subsurfaces %{buildroot}%{_bindir}
+install -m 755 weston-transformed %{buildroot}%{_bindir}
+install -m 755 weston-fullscreen %{buildroot}%{_bindir}
+
 
 install -d %{buildroot}%{_unitdir_user}
 install -m 644 %{SOURCE1} %{buildroot}%{_unitdir_user}/weston.target
@@ -168,6 +169,7 @@ getent group weston-launch >/dev/null || %{_sbindir}/groupadd -o -r weston-launc
 %_libdir/weston/desktop-shell.so
 %_libdir/weston/drm-backend.so
 %_libdir/weston/fbdev-backend.so
+%_libdir/weston/fullscreen-shell.so
 %_libdir/weston/headless-backend.so
 %_libdir/weston/wayland-backend.so
 %_libdir/weston/gl-renderer.so
