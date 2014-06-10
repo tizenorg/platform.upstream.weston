@@ -24,9 +24,6 @@ Url:            http://weston.freedesktop.org/
 Source0:         %name-%version.tar.xz
 Source1:        weston.target
 Source1001: 	weston.manifest
-Source1002:	shell-make-panel-optional-panel-false-in-weston.ini.patch
-Source1003:	shell-1.4.0-Hack-to-allow-selecting-a-default-output.patch
-Source1004:	allow-to-start-weston-with-system-user.patch
 BuildRequires:	autoconf >= 2.64, automake >= 1.11
 BuildRequires:  expat-devel
 BuildRequires:  libjpeg-devel
@@ -106,13 +103,6 @@ through the network.
 %prep
 %setup -q
 cp %{SOURCE1001} .
-
-%if "%{profile}" == "common"
-cp %{SOURCE1002} %{SOURCE1003} %{SOURCE1004} .
-patch -p1 < %{SOURCE1002}
-patch -p1 < %{SOURCE1003}
-patch -p1 < %{SOURCE1004}
-%endif
 
 %build
 %autogen --disable-static --disable-setuid-install  --enable-simple-clients --enable-clients --disable-libunwind --disable-xwayland --disable-xwayland-test --disable-x11-compositor --disable-rpi-compositor %{?extra_config_options1:%extra_config_options1} %{?extra_config_options2:%extra_config_options2}
