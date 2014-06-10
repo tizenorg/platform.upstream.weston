@@ -101,6 +101,12 @@ through the network.
 %endif
 
 %prep
+
+%if "%{profile}" == "common"
+export  CFLAGS+="-DLOCAL_CONFIG_WESTON_ALLOW_SYS_UID=1" \
+%endif
+
+
 %setup -q
 cp %{SOURCE1001} .
 
