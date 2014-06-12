@@ -69,6 +69,13 @@ if test x$enable_egl = xyes; then
         PKG_CHECK_MODULES([EGL_TESTS], [egl >= 7.10 glesv2 wayland-client wayland-egl])
 fi
 
+AC_ARG_ENABLE(sys_uid, [  --enable-sys-uid],,
+              enable_sys_uid=no)
+AM_CONDITIONAL(ENABLE_SYS_UID, test x$enable_sys_uid = xyes)
+if test x$enable_sys_uid = xyes; then
+	AC_DEFINE([ENABLE_SYS_UID], [1], [Allow system users to launch Weston without weston-launch])
+fi
+
 AC_ARG_ENABLE(xkbcommon,
 	      AS_HELP_STRING([--disable-xkbcommon], [Disable libxkbcommon
 			      support: This is only useful in environments

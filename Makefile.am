@@ -33,6 +33,10 @@ AM_CPPFLAGS = 					\
 	-DLIBEXECDIR='"$(libexecdir)"'		\
 	-DBINDIR='"$(bindir)"'
 
+if ENABLE_SYS_UID
+AM_CPPFLAGS += -DLOCAL_CONFIG_WESTON_ALLOW_SYS_UID=1
+endif
+
 CLEANFILES = weston.ini $(BUILT_SOURCES)
 
 bin_PROGRAMS += weston
