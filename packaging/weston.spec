@@ -11,6 +11,10 @@
 %define extra_config_options2 --enable-rdp-compositor
 %endif
 
+%if "%{profile}" == "common"
+%define extra_config_options3 --enable-sys-uid
+%endif
+
 Name:           weston
 Version:        1.5.0
 Release:        0
@@ -102,16 +106,12 @@ through the network.
 
 %prep
 
-%if "%{profile}" == "common"
-export  CFLAGS+="-DLOCAL_CONFIG_WESTON_ALLOW_SYS_UID=1" \
-%endif
-
 
 %setup -q
 cp %{SOURCE1001} .
 
 %build
-%autogen --disable-static --disable-setuid-install  --enable-simple-clients --enable-clients --disable-libunwind --disable-xwayland --disable-xwayland-test --disable-x11-compositor --disable-rpi-compositor %{?extra_config_options1:%extra_config_options1} %{?extra_config_options2:%extra_config_options2}
+%autogen --disable-static --disable-setuid-install  --enable-simple-clients --enable-clients --disable-libunwind --disable-xwayland --disable-xwayland-test --disable-x11-compositor --disable-rpi-compositor %{?extra_config_options1:%extra_config_options1} %{?extra_config_options2:%extra_config_options2} %{?extra_config_options3:%extra_config_options3}
 make %{?_smp_mflags}
 
 %install
