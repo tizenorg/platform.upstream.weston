@@ -1,7 +1,6 @@
 %bcond_with wayland
 %bcond_with mobile
 %bcond_with rdp
-%define _unitdir_user /usr/lib/systemd/user
 
 %if %{with mobile}
 %define extra_config_options1 --disable-drm-compositor
@@ -66,7 +65,6 @@ Requires(pre):  /usr/sbin/groupadd
 ExclusiveArch:
 %endif
 
-
 %description
 Weston is the reference implementation of a Wayland compositor, and a
 useful compositor in its own right. Weston has various backends that
@@ -78,7 +76,6 @@ capable terminal emulator (weston-terminal) and an toy/example
 desktop shell. Finally, weston also provides integration with the
 Xorg server and can pull X clients into the Wayland desktop and act
 as a X window manager.
-
 
 %package devel
 Summary: Development files for package %{name}
@@ -105,13 +102,23 @@ through the network.
 %endif
 
 %prep
-
-
 %setup -q
 cp %{SOURCE1001} .
 
 %build
-%autogen --disable-static --disable-setuid-install  --enable-simple-clients --enable-clients --disable-libunwind --disable-xwayland --disable-xwayland-test --disable-x11-compositor --disable-rpi-compositor %{?extra_config_options1:%extra_config_options1} %{?extra_config_options2:%extra_config_options2} %{?extra_config_options3:%extra_config_options3}
+%autogen --disable-static \
+         --disable-setuid-install \
+         --enable-simple-clients \
+         --enable-clients \
+         --disable-libunwind \
+         --disable-xwayland \
+         --disable-xwayland-test \
+         --disable-x11-compositor \
+         --disable-rpi-compositor \
+         %{?extra_config_options1:%extra_config_options1} \
+         %{?extra_config_options2:%extra_config_options2} \
+         %{?extra_config_options3:%extra_config_options3}
+
 make %{?_smp_mflags}
 
 %install
@@ -156,50 +163,50 @@ getent group weston-launch >/dev/null || %{_sbindir}/groupadd -o -r weston-launc
 %manifest %{name}.manifest
 %defattr(-,root,root)
 %license COPYING
-%_bindir/wcap-*
-%_bindir/weston
-%_bindir/weston-info
+%{_bindir}/wcap-*
+%{_bindir}/weston
+%{_bindir}/weston-info
 %attr(4755,root,root) %{_bindir}/weston-launch
 %{_bindir}/weston-terminal
-%_libexecdir/weston-*
-%_libdir/weston/desktop-shell.so
-%_libdir/weston/drm-backend.so
-%_libdir/weston/fbdev-backend.so
-%_libdir/weston/fullscreen-shell.so
-%_libdir/weston/headless-backend.so
-%_libdir/weston/wayland-backend.so
-%_libdir/weston/gl-renderer.so
-%_datadir/weston
+%{_libexecdir}/weston-*
+%{_libdir}/weston/desktop-shell.so
+%{_libdir}/weston/drm-backend.so
+%{_libdir}/weston/fbdev-backend.so
+%{_libdir}/weston/fullscreen-shell.so
+%{_libdir}/weston/headless-backend.so
+%{_libdir}/weston/wayland-backend.so
+%{_libdir}/weston/gl-renderer.so
+%{_datadir}/weston
 %{_unitdir_user}/weston.target
 
 %files devel
 %manifest %{name}.manifest
-%_includedir/weston/*.h
-%_libdir/pkgconfig/*.pc
+%{_includedir}/weston/*.h
+%{_libdir}/pkgconfig/*.pc
 
 %files clients
 %manifest %{name}.manifest
-%_bindir/weston-simple-touch
-%_bindir/weston-simple-shm
-%_bindir/weston-simple-egl
-%_bindir/weston-flower
-%_bindir/weston-image
-%_bindir/weston-cliptest
-%_bindir/weston-dnd
-%_bindir/weston-editor
-%_bindir/weston-smoke
-%_bindir/weston-resizor
-%_bindir/weston-eventdemo
-%_bindir/weston-clickdot
-%_bindir/weston-subsurfaces
-%_bindir/weston-transformed
-%_bindir/weston-fullscreen
-%_bindir/weston-calibrator
+%{_bindir}/weston-simple-touch
+%{_bindir}/weston-simple-shm
+%{_bindir}/weston-simple-egl
+%{_bindir}/weston-flower
+%{_bindir}/weston-image
+%{_bindir}/weston-cliptest
+%{_bindir}/weston-dnd
+%{_bindir}/weston-editor
+%{_bindir}/weston-smoke
+%{_bindir}/weston-resizor
+%{_bindir}/weston-eventdemo
+%{_bindir}/weston-clickdot
+%{_bindir}/weston-subsurfaces
+%{_bindir}/weston-transformed
+%{_bindir}/weston-fullscreen
+%{_bindir}/weston-calibrator
 
 %if %{with rdp}
 %files rdp
 %manifest %{name}.manifest
-%_libdir/weston/rdp-backend.so
+%{_libdir}/weston/rdp-backend.so
 %endif
 
 %changelog
