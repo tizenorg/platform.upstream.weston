@@ -176,6 +176,9 @@ getent group weston-launch >/dev/null || %{_sbindir}/groupadd -o -r weston-launc
 %{_libdir}/weston/headless-backend.so
 %{_libdir}/weston/wayland-backend.so
 %{_libdir}/weston/gl-renderer.so
+%{_libdir}/weston/ivi-shell.so
+%{_libdir}/weston/ivi-layout.so
+%{_libdir}/weston/hmi-controller.so
 %{_datadir}/weston
 %{_unitdir_user}/weston.target
 
