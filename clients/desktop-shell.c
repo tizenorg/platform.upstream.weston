@@ -1206,7 +1206,7 @@ static void
 output_init(struct output *output, struct desktop *desktop)
 {
 	struct wl_surface *surface;
-	if(output->panel) {
+	if(desktop->panel) {
 		output->panel = panel_create(desktop);
 		surface = window_get_wl_surface(output->panel->window);
 		desktop_shell_set_panel(desktop->shell,
