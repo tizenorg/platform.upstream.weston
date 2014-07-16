@@ -357,8 +357,14 @@
     </request>
 
     <request name="set_minimized">
-      <description summary="minimize the surface">
+      <description summary="set the surface state as minimized">
         Minimize the surface.
+      </description>
+    </request>
+
+    <request name="unset_minimized">
+      <description summary="unset the surface state as minimized">
+        Unminimize the surface.
       </description>
     </request>
 
