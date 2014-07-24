@@ -38,6 +38,7 @@
 #include <sys/socket.h>
 #include <sys/utsname.h>
 #include <sys/stat.h>
+#include <sys/reboot.h>
 #include <unistd.h>
 #include <math.h>
 #include <linux/input.h>
@@ -57,6 +58,7 @@
 #include "../shared/os-compatibility.h"
 #include "git-version.h"
 #include "version.h"
+#include "launcher-util.h"
 
 static struct wl_list child_process_list;
 static struct weston_compositor *segv_compositor;
@@ -4130,6 +4132,16 @@ handle_primary_client_destroyed(struct wl_listener *listener, void *data)
 	wl_display_terminate(wl_client_get_display(client));
 }
 
+static void
+power_off_binding(struct weston_seat *seat, uint32_t time,
+		  uint32_t key, void *data)
+{
+	struct weston_compositor *ec = data;
+	struct weston_launcher *launcher = ec->launcher;
+
+	weston_launcher_reboot(launcher);
+}
+
 int main(int argc, char *argv[])
 {
 	int ret = EXIT_SUCCESS;
@@ -4310,6 +4322,10 @@ int main(int argc, char *argv[])
 			goto out;
 		}
 	}
+
+	/* Binding KEY_POWER to reboot machine */
+	weston_compositor_add_key_binding(ec, KEY_POWER,
+					  0, power_off_binding, ec);
 
 	weston_compositor_wake(ec);
 

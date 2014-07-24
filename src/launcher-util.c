@@ -34,6 +34,7 @@
 #include <sys/stat.h>
 #include <sys/uio.h>
 #include <sys/ioctl.h>
+#include <sys/reboot.h>
 #include <fcntl.h>
 #include <unistd.h>
 #include <linux/vt.h>
@@ -99,6 +100,34 @@ struct weston_launcher {
 	int kb_mode, tty, drm_fd;
 	struct wl_event_source *vt_source;
 };
+
+void
+weston_launcher_reboot(struct weston_launcher *launcher)
+{
+	ssize_t len;
+	int n;
+	struct weston_launcher_message *message;
+
+	if (launcher->logind) {
+		reboot(RB_POWER_OFF);
+		return;
+	}
+
+	if (launcher->fd == -1)
+		return;
+
+	n = sizeof(*message) + 1;
+	message = malloc(n);
+	if (!message)
+		return -1;
+
+	message->opcode = WESTON_LAUNCHER_REBOOT;
+
+	do {
+		len = send(launcher->fd, message, n, 0);
+	} while (len < 0 && errno == EINTR);
+	free(message);
+}
 
 int
 weston_launcher_open(struct weston_launcher *launcher,
