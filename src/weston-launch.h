@@ -25,6 +25,7 @@
 
 enum weston_launcher_opcode {
 	WESTON_LAUNCHER_OPEN,
+	WESTON_LAUNCHER_REBOOT,
 };
 
 enum weston_launcher_event {

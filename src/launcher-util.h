@@ -36,6 +36,9 @@ weston_launcher_connect(struct weston_compositor *compositor, int tty,
 void
 weston_launcher_destroy(struct weston_launcher *launcher);
 
+void
+weston_launcher_reboot(struct weston_launcher *launcher);
+
 int
 weston_launcher_open(struct weston_launcher *launcher,
 		     const char *path, int flags);

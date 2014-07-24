@@ -41,6 +41,7 @@
 #include <signal.h>
 #include <unistd.h>
 #include <fcntl.h>
+#include <sys/reboot.h>
 
 #include <linux/vt.h>
 #include <linux/major.h>
@@ -395,6 +396,9 @@ handle_socket_msg(struct weston_launch *wl)
 	switch (message->opcode) {
 	case WESTON_LAUNCHER_OPEN:
 		ret = handle_open(wl, &msg, len);
+		break;
+	case WESTON_LAUNCHER_REBOOT:
+		reboot(RB_POWER_OFF);
 		break;
 	}
 
