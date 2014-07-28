@@ -1356,14 +1356,38 @@ qa_list_surfaces(struct wl_client *client,
 {
 	struct desktop_shell *shell = wl_resource_get_user_data(resource);
 	struct shell_surface *shsurf;
-	char *list;
+	struct weston_view *view;
+	char *list, *title, *state, *minimized;
 
 	list = strdup("");
+
 	wl_list_for_each(shsurf, &shell->surface_list, link) {
 		if (shsurf->title)
-			asprintf(&list, "%s\n %s", list, shsurf->title);
+			title = strdup(shsurf->title);
 		else
-			asprintf(&list, "%s\n %s", list, "<Default>");
+			title = strdup("<Default>");
+
+               if (shsurf->state.fullscreen)
+                        state = strdup("Fullscreen");
+                else if (shsurf->state.maximized)
+                        state = strdup("Maximized");
+                else
+                        state = strdup("Normal");
+
+                minimized = NULL;
+                wl_list_for_each(view, &shell->minimized_layer.view_list, layer_link) {
+                        if (view == shsurf->view)
+                                minimized = strdup("Yes");
+                }
+                        if (!minimized)
+                                minimized = strdup("No");
+
+		asprintf(&list, "%s\n %s \t\t %dx%d \t %s \t %s", list,
+		         title, shsurf->surface->width, shsurf->surface->height, state, minimized);
+
+		free(minimized);
+		free(state);
+		free(title);
 	}
 
 	qa_send_surfaces_listed(resource, list);
@@ -5768,17 +5792,41 @@ surface_list_binding(struct weston_seat *seat, uint32_t time, uint32_t key, void
 {
 	struct desktop_shell *shell = data;
 	struct shell_surface *shsurf;
-	char *list;
+	struct weston_view *view;
+	char *list, *title, *state, *minimized;
 
 	list = strdup("");
+
 	wl_list_for_each(shsurf, &shell->surface_list, link) {
 		if (shsurf->title)
-			asprintf(&list, "%s\n %s", list, shsurf->title);
+			title = strdup(shsurf->title);
 		else
-			asprintf(&list, "%s\n %s", list, "<Default>");
+			title = strdup("<Default>");
+
+		if (shsurf->state.fullscreen)
+			state = strdup("Fullscreen");
+		else if (shsurf->state.maximized)
+			state = strdup("Maximized");
+		else
+			state = strdup("Normal");
+
+		minimized = NULL;
+	        wl_list_for_each(view, &shell->minimized_layer.view_list, layer_link) {
+			if (view == shsurf->view)
+				minimized = strdup("Yes");
+		}
+			if (!minimized)
+				minimized = strdup("No");
+
+		asprintf(&list, "%s\n %s \t\t %dx%d \t %s \t %s", list,
+		         title, shsurf->surface->width, shsurf->surface->height, state, minimized);
+
+		free(minimized);
+		free(state);
+		free(title);
 	}
 
-	weston_log ("\n\nSurfaces list :\n-------------%s\n", list);
+	weston_log ("\n\nSurfaces list :\n-------------\n Title \t\t\t\t Size \t State \t Minimized\n%s", list);
 
 	free(list);
 }

@@ -16,7 +16,7 @@ struct display {
 static void
 surfaces_listed (void *data, struct qa *qa, const char *list)
 {
-	printf ("SURFACES LIST : %s\n", list);
+	printf (" SURFACES LIST :\n\n Title \t\t\t\t Size \t State \t Minimized\n%s\n", list);
 }
 
 static const struct qa_listener qa_listener = {
