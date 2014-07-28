@@ -204,6 +204,8 @@ struct desktop_shell {
 	struct wl_listener output_move_listener;
 	struct wl_list output_list;
 
+	struct wl_list surface_list;
+
 	char *client;
 };
 
