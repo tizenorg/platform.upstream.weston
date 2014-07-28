@@ -80,7 +80,9 @@ nodist_weston_SOURCES =					\
 	protocol/workspaces-protocol.c			\
 	protocol/workspaces-server-protocol.h		\
 	protocol/scaler-protocol.c			\
-	protocol/scaler-server-protocol.h
+	protocol/scaler-server-protocol.h		\
+	protocol/qa-protocol.c				\
+	protocol/qa-server-protocol.h
 
 BUILT_SOURCES += $(nodist_weston_SOURCES)
 
@@ -357,7 +359,7 @@ spring_tool_SOURCES =				\
 
 if BUILD_CLIENTS
 
-bin_PROGRAMS += weston-terminal weston-info
+bin_PROGRAMS += weston-terminal weston-info weston-qa-listsurfaces
 
 libexec_PROGRAMS +=				\
 	weston-desktop-shell			\
@@ -461,6 +463,13 @@ weston_screenshooter_CFLAGS = $(AM_CFLAGS) $(CLIENT_CFLAGS)
 weston_terminal_SOURCES = clients/terminal.c
 weston_terminal_LDADD = libtoytoolkit.la -lutil
 weston_terminal_CFLAGS = $(AM_CFLAGS) $(CLIENT_CFLAGS)
+
+weston_qa_listsurfaces_SOURCES = clients/qa-listsurfaces.c
+nodist_weston_qa_listsurfaces_SOURCES =			\
+        protocol/qa-protocol.c				\
+	protocol/qa-client-protocol.h
+weston_qa_listsurfaces_LDADD = $(CLIENT_LIBS)
+weston_qa_listsurfaces_CFLAGS = $(AM_CFLAGS) $(CLIENT_CFLAGS)
 
 weston_image_SOURCES = clients/image.c
 weston_image_LDADD = libtoytoolkit.la
@@ -620,8 +629,9 @@ BUILT_SOURCES +=					\
 	protocol/fullscreen-shell-protocol.c		\
 	protocol/fullscreen-shell-client-protocol.h	\
 	protocol/xdg-shell-protocol.c			\
-	protocol/xdg-shell-client-protocol.h
-
+	protocol/xdg-shell-client-protocol.h		\
+	protocol/qa-protocol.c				\
+	protocol/qa-client-protocol.h
 
 westondatadir = $(datadir)/weston
 dist_westondata_DATA =				\
@@ -973,7 +983,8 @@ EXTRA_DIST +=					\
 	protocol/wayland-test.xml		\
 	protocol/xdg-shell.xml			\
 	protocol/fullscreen-shell.xml		\
-	protocol/scaler.xml
+	protocol/scaler.xml			\
+	protocol/qa.xml
 
 man_MANS = weston.1 weston.ini.5
 

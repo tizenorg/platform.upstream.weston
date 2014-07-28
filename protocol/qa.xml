@@ -1,0 +1,13 @@
+<protocol name="qa">
+
+  <interface name="qa" version="1">
+    <request name="list_surfaces">
+    </request>
+
+    <event name="surfaces_listed">
+      <arg name="list" type="string"/>
+    </event>
+
+  </interface>
+
+</protocol>

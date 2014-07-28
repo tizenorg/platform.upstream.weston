@@ -39,6 +39,7 @@
 #include "workspaces-server-protocol.h"
 #include "../shared/config-parser.h"
 #include "xdg-shell-server-protocol.h"
+#include "qa-server-protocol.h"
 
 #define DEFAULT_NUM_WORKSPACES 1
 #define DEFAULT_WORKSPACE_CHANGE_ANIMATION_LENGTH 200
@@ -1350,9 +1351,54 @@ static const struct workspace_manager_interface workspace_manager_implementation
 };
 
 static void
+qa_list_surfaces(struct wl_client *client,
+	         struct wl_resource *resource)
+{
+	struct desktop_shell *shell = wl_resource_get_user_data(resource);
+	struct shell_surface *shsurf;
+	char *list;
+
+	list = strdup("");
+	wl_list_for_each(shsurf, &shell->surface_list, link) {
+		if (shsurf->title)
+			asprintf(&list, "%s\n %s", list, shsurf->title);
+		else
+			asprintf(&list, "%s\n %s", list, "<Default>");
+	}
+
+	qa_send_surfaces_listed(resource, list);
+
+	free(list);
+}
+
+static const struct qa_interface qa_implementation = {
+	qa_list_surfaces
+};
+
+static void
 unbind_resource(struct wl_resource *resource)
 {
 	wl_list_remove(wl_resource_get_link(resource));
+}
+
+static void
+bind_qa(struct wl_client *client,
+	void *data, uint32_t version, uint32_t id)
+{
+	struct desktop_shell *shell = data;
+	struct wl_resource *resource;
+
+	resource = wl_resource_create(client,
+	                              &qa_interface, 1, id);
+
+	if (resource == NULL) {
+		weston_log("couldn't add qa object");
+		return;
+	}
+
+	wl_resource_set_implementation(resource,
+	                               &qa_implementation,
+	                               shell, NULL);
 }
 
 static void
@@ -5722,8 +5768,9 @@ surface_list_binding(struct weston_seat *seat, uint32_t time, uint32_t key, void
 {
 	struct desktop_shell *shell = data;
 	struct shell_surface *shsurf;
-	char *list = "";
+	char *list;
 
+	list = strdup("");
 	wl_list_for_each(shsurf, &shell->surface_list, link) {
 		if (shsurf->title)
 			asprintf(&list, "%s\n %s", list, shsurf->title);
@@ -6239,6 +6286,10 @@ module_init(struct weston_compositor *ec,
 
 	if (wl_global_create(ec->wl_display, &workspace_manager_interface, 1,
 			     shell, bind_workspace_manager) == NULL)
+		return -1;
+
+	if (wl_global_create(ec->wl_display, &qa_interface, 1,
+	                     shell, bind_qa) == NULL)
 		return -1;
 
 	shell->child.deathstamp = weston_compositor_get_time();

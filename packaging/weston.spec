@@ -168,6 +168,7 @@ getent group weston-launch >/dev/null || %{_sbindir}/groupadd -o -r weston-launc
 %{_bindir}/weston-info
 %attr(4755,root,root) %{_bindir}/weston-launch
 %{_bindir}/weston-terminal
+%{_bindir}/weston-qa-listsurfaces
 %{_libexecdir}/weston-*
 %{_libdir}/weston/desktop-shell.so
 %{_libdir}/weston/drm-backend.so
