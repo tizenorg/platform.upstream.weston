@@ -5414,7 +5414,9 @@ switcher_next(struct switcher *switcher)
 	wl_list_for_each(state, &ws->focus_list, link) {
 		if (state->keyboard_focus) {
 			surface = weston_surface_get_main_surface(state->keyboard_focus);
-			set_minimized(surface, 1);
+			shsurf = get_shell_surface(surface);
+			if (shsurf->state.fullscreen)
+				set_minimized(surface, 1);
 		}
 	}
 
