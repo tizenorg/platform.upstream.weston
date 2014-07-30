@@ -5405,8 +5405,18 @@ switcher_next(struct switcher *switcher)
 {
 	struct weston_view *view;
 	struct weston_surface *first = NULL, *prev = NULL, *next = NULL;
+	struct weston_surface *surface;
 	struct shell_surface *shsurf;
+	struct focus_state *state;
 	struct workspace *ws = get_current_workspace(switcher->shell);
+
+	 /* if the surface is fullscreen, unset the compositor state without changing the surface state yet */
+	wl_list_for_each(state, &ws->focus_list, link) {
+		if (state->keyboard_focus) {
+			surface = weston_surface_get_main_surface(state->keyboard_focus);
+			set_minimized(surface, 1);
+		}
+	}
 
 	 /* temporary re-display minimized surfaces */
 	struct weston_view *tmp;
