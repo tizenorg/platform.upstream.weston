@@ -3507,12 +3507,21 @@ xdg_surface_set_minimized(struct wl_client *client,
 			    struct wl_resource *resource)
 {
 	struct shell_surface *shsurf = wl_resource_get_user_data(resource);
+	float x, y;
 
 	if (shsurf->type != SHELL_SURFACE_TOPLEVEL)
 		return;
 
 	 /* apply compositor's own minimization logic (hide) */
 	set_minimized(shsurf->surface, 1);
+
+	 /* if the surface is fullscreen, unset the compositor state without changing the surface state yet */
+	if (shsurf->state.fullscreen) {
+		x = shsurf->view->geometry.x;
+		y = shsurf->view->geometry.y;
+		unset_fullscreen(shsurf);
+		weston_view_set_position(shsurf->view, x, y);
+	}
 }
 
 static void
@@ -5440,12 +5449,16 @@ switcher_next(struct switcher *switcher)
 	wl_list_remove(&switcher->listener.link);
 	wl_signal_add(&next->destroy_signal, &switcher->listener);
 
+	/*shsurf = get_shell_surface(switcher->current);
+	if (shsurf->state.fullscreen)
+		shell_ensure_fullscreen_black_view(shsurf);*/
+
 	switcher->current = next;
 	wl_list_for_each(view, &next->views, surface_link)
 		view->alpha = 1.0;
 
 	shsurf = get_shell_surface(switcher->current);
-	if (shsurf && shsurf->state.fullscreen)
+	if (shsurf && shsurf->state.fullscreen && shsurf->fullscreen.black_view)
 		shsurf->fullscreen.black_view->alpha = 1.0;
 }
 
