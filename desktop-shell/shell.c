@@ -2491,11 +2491,12 @@ unset_maximized(struct shell_surface *shsurf)
 static void
 set_minimized(struct weston_surface *surface, uint32_t is_true)
 {
+	struct weston_view *view;
 	struct shell_surface *shsurf;
-	struct workspace *current_ws;
+	struct workspace *ws;
 	struct weston_seat *seat;
 	struct weston_surface *focus;
-	struct weston_view *view;
+	float x, y;
 
 	view = get_default_view(surface);
 	if (!view)
@@ -2504,14 +2505,24 @@ set_minimized(struct weston_surface *surface, uint32_t is_true)
 	assert(weston_surface_get_main_surface(view->surface) == view->surface);
 
 	shsurf = get_shell_surface(surface);
-	current_ws = get_current_workspace(shsurf->shell);
+	ws = get_current_workspace(shsurf->shell);
 
-	wl_list_remove(&view->layer_link);
-	 /* hide or show, depending on the state */
+	/* hide or show, depending on the state */
 	if (is_true) {
+		/* if the surface is fullscreen, unset the global fullscreen state,
+		 * but keep the surface centered on its previous output.
+		 */
+		if (shsurf->state.fullscreen) {
+			x = shsurf->view->geometry.x;
+			y = shsurf->view->geometry.y;
+			unset_fullscreen(shsurf);
+			weston_view_set_position(shsurf->view, x, y);
+		}
+
+		wl_list_remove(&view->layer_link);
 		wl_list_insert(&shsurf->shell->minimized_layer.view_list, &view->layer_link);
 
-		drop_focus_state(shsurf->shell, current_ws, view->surface);
+		drop_focus_state(shsurf->shell, ws, view->surface);
 		wl_list_for_each(seat, &shsurf->shell->compositor->seat_list, link) {
 			if (!seat->keyboard)
 				continue;
@@ -2519,19 +2530,15 @@ set_minimized(struct weston_surface *surface, uint32_t is_true)
 			if (focus == view->surface)
 				weston_keyboard_set_focus(seat->keyboard, NULL);
 		}
-	}
-	else {
-		wl_list_insert(&current_ws->layer.view_list, &view->layer_link);
+	} else {
+		wl_list_remove(&view->layer_link);
+		wl_list_insert(&ws->layer.view_list, &view->layer_link);
 
-		wl_list_for_each(seat, &shsurf->shell->compositor->seat_list, link) {
-			if (!seat->keyboard)
-				continue;
+		wl_list_for_each(seat, &shsurf->shell->compositor->seat_list, link)
 			activate(shsurf->shell, view->surface, seat, true);
-		}
 	}
 
 	shell_surface_update_child_surface_layers(shsurf);
-
 	weston_view_damage_below(view);
 }
 
@@ -3511,7 +3518,6 @@ xdg_surface_set_minimized(struct wl_client *client,
 	if (shsurf->type != SHELL_SURFACE_TOPLEVEL)
 		return;
 
-	 /* apply compositor's own minimization logic (hide) */
 	set_minimized(shsurf->surface, 1);
 }
 
@@ -5394,12 +5400,24 @@ struct switcher {
 static void
 switcher_next(struct switcher *switcher)
 {
+	struct focus_state *state;
+	struct weston_surface *surface;
 	struct weston_view *view;
 	struct weston_surface *first = NULL, *prev = NULL, *next = NULL;
 	struct shell_surface *shsurf;
 	struct workspace *ws = get_current_workspace(switcher->shell);
 
-	 /* temporary re-display minimized surfaces */
+	/* if the focused surface is fullscreen, minimize it */
+	wl_list_for_each(state, &ws->focus_list, link) {
+		if (state->keyboard_focus) {
+			surface = weston_surface_get_main_surface(state->keyboard_focus);
+			shsurf = get_shell_surface(surface);
+			if (shsurf->state.fullscreen)
+				set_minimized(surface, 1);
+		}
+	}
+
+	/* temporarily display minimized surfaces again */
 	struct weston_view *tmp;
 	struct weston_view **minimized;
 	wl_list_for_each_safe(view, tmp, &switcher->shell->minimized_layer.view_list, layer_link) {
@@ -5445,7 +5463,7 @@ switcher_next(struct switcher *switcher)
 		view->alpha = 1.0;
 
 	shsurf = get_shell_surface(switcher->current);
-	if (shsurf && shsurf->state.fullscreen)
+	if (shsurf && shsurf->state.fullscreen && shsurf->fullscreen.black_view)
 		shsurf->fullscreen.black_view->alpha = 1.0;
 }
 
