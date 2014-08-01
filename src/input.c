@@ -1421,13 +1421,15 @@ weston_touch_set_focus(struct weston_seat *seat, struct weston_view *view)
 	}
 
 	if (view) {
-		struct wl_client *surface_client =
-			wl_resource_get_client(view->surface->resource);
-		move_resources_for_client(focus_resource_list,
-					  &seat->touch->resource_list,
-					  surface_client);
-		wl_resource_add_destroy_listener(view->surface->resource,
+		if (view->surface->resource) {
+			struct wl_client *surface_client =
+				wl_resource_get_client(view->surface->resource);
+			move_resources_for_client(focus_resource_list,
+						  &seat->touch->resource_list,
+						  surface_client);
+			wl_resource_add_destroy_listener(view->surface->resource,
 						 &seat->touch->focus_resource_listener);
+		}
 		wl_signal_add(&view->destroy_signal, &seat->touch->focus_view_listener);
 	}
 	seat->touch->focus = view;
