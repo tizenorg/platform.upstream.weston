@@ -4238,6 +4238,15 @@ int main(int argc, char *argv[])
 		exit(EXIT_FAILURE);
 
 	ec = backend_init(display, &argc, argv, config);
+	if ( (ec == NULL) && strcmp(WESTON_NATIVE_BACKEND,"fbdev-backend.so") ) {
+		weston_log("warning: failed to init %s, trying to fallback to fbdev\n",WESTON_NATIVE_BACKEND);
+		backend = strdup("fbdev-backend.so");
+		backend_init = weston_load_module(backend, "backend_init");
+		free(backend);
+		if (!backend_init)
+			exit(EXIT_FAILURE);
+		ec = backend_init(display, &argc, argv, config);
+	}
 	if (ec == NULL) {
 		weston_log("fatal: failed to create compositor\n");
 		exit(EXIT_FAILURE);
