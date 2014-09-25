@@ -202,6 +202,7 @@ struct weston_output {
 	uint32_t frame_time; /* presentation timestamp in milliseconds */
 	uint64_t msc;        /* media stream counter */
 	int disable_planes;
+	uint32_t default_output;
 	int destroying;
 	struct wl_list feedback_list;
 
@@ -632,6 +633,8 @@ struct weston_compositor {
 	struct wl_list touch_binding_list;
 	struct wl_list axis_binding_list;
 	struct wl_list debug_binding_list;
+
+	struct weston_output *default_output;
 
 	uint32_t state;
 	struct wl_event_source *idle_source;
