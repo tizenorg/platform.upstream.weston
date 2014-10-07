@@ -24,9 +24,8 @@ Url:            http://weston.freedesktop.org/
 
 #Git-Clone:	git://anongit.freedesktop.org/wayland/weston
 #Git-Web:	http://cgit.freedesktop.org/wayland/weston/
-Source0:         %name-%version.tar.xz
-Source1:        weston.target
-Source1001: 	weston.manifest
+Source0:        %name-%version.tar.xz
+Source1001:     weston.manifest
 BuildRequires:	autoconf >= 2.64, automake >= 1.11
 BuildRequires:  expat-devel
 BuildRequires:  libjpeg-devel
@@ -143,8 +142,6 @@ install -m 755 weston-transformed %{buildroot}%{_bindir}
 install -m 755 weston-fullscreen %{buildroot}%{_bindir}
 
 
-install -d %{buildroot}%{_unitdir_user}
-install -m 644 %{SOURCE1} %{buildroot}%{_unitdir_user}/weston.target
 # The weston.service unit file must be provided by the weston-startup
 # virtual package, i.e. "Provide: weston-startup".  The weston-startup
 # virtual package requirement is intended to force Tizen profile
@@ -177,7 +174,6 @@ getent group weston-launch >/dev/null || %{_sbindir}/groupadd -o -r weston-launc
 %{_libdir}/weston/wayland-backend.so
 %{_libdir}/weston/gl-renderer.so
 %{_datadir}/weston
-%{_unitdir_user}/weston.target
 
 %files devel
 %manifest %{name}.manifest

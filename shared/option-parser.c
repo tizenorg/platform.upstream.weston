@@ -27,18 +27,23 @@
 #include <stdio.h>
 #include <string.h>
 #include <assert.h>
+#include <limits.h>
+#include <wayland-util.h>
 
 #include "config-parser.h"
+#include "str-util.h"
 
 static void
 handle_option(const struct weston_option *option, char *value)
 {
 	switch (option->type) {
 	case WESTON_OPTION_INTEGER:
-		* (int32_t *) option->data = strtol(value, NULL, 0);
+		if (!weston_strtoi(value, NULL, 0, (int32_t *) option->data))
+			* (int32_t *) option->data = (int32_t)LONG_MAX;
 		return;
 	case WESTON_OPTION_UNSIGNED_INTEGER:
-		* (uint32_t *) option->data = strtoul(value, NULL, 0);
+		if (!weston_strtoui(value, NULL, 0, (uint32_t *) option->data))
+			* (uint32_t *) option->data = (uint32_t)ULONG_MAX;
 		return;
 	case WESTON_OPTION_STRING:
 		* (char **) option->data = strdup(value);
