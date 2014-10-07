@@ -55,6 +55,7 @@
 #include "compositor.h"
 #include "scaler-server-protocol.h"
 #include "../shared/os-compatibility.h"
+#include "../shared/str-util.h"
 #include "git-version.h"
 #include "version.h"
 
@@ -3052,7 +3053,7 @@ bind_output(struct wl_client *client,
 	struct wl_resource *resource;
 
 	resource = wl_resource_create(client, &wl_output_interface,
-				      MIN(version, 2), id);
+				      MIN(version, 3), id);
 	if (resource == NULL) {
 		wl_client_post_no_memory(client);
 		return;
@@ -3071,7 +3072,11 @@ bind_output(struct wl_client *client,
 				output->transform);
 	if (version >= 2)
 		wl_output_send_scale(resource,
-				     output->current_scale);
+				output->current_scale);
+	if (version >= 3) {
+		wl_output_send_name(resource, output->name);
+		wl_output_send_seatname(resource, output->seat_data.seatname);
+	}
 
 	wl_list_for_each (mode, &output->mode_list, link) {
 		wl_output_send_mode(resource,
@@ -3119,6 +3124,7 @@ weston_output_destroy(struct weston_output *output)
 	wl_signal_emit(&output->destroy_signal, output);
 
 	free(output->name);
+	free(output->seat_data.seatname);
 	pixman_region32_fini(&output->region);
 	pixman_region32_fini(&output->previous_damage);
 	output->compositor->output_id_pool &= ~(1 << output->id);
@@ -3321,7 +3327,7 @@ weston_output_init(struct weston_output *output, struct weston_compositor *c,
 	output->compositor->output_id_pool |= 1 << output->id;
 
 	output->global =
-		wl_global_create(c->wl_display, &wl_output_interface, 2,
+		wl_global_create(c->wl_display, &wl_output_interface, 3,
 				 output, bind_output);
 	wl_signal_emit(&c->output_created_signal, output);
 }
@@ -3617,14 +3623,14 @@ log_uname(void)
 WL_EXPORT int
 weston_environment_get_fd(const char *env)
 {
-	char *e, *end;
+	char *e;
 	int fd, flags;
 
 	e = getenv(env);
 	if (!e)
 		return -1;
-	fd = strtol(e, &end, 0);
-	if (*end != '\0')
+
+	if (!weston_strtoi(e, NULL, 0, &fd))
 		return -1;
 
 	flags = fcntl(fd, F_GETFD);
@@ -4072,6 +4078,7 @@ usage(int error_code)
 		"  --width=WIDTH\t\tWidth of Wayland surface\n"
 		"  --height=HEIGHT\tHeight of Wayland surface\n"
 		"  --scale=SCALE\tScale factor of ouput\n"
+		"  --seatfilter\t\tFilter outputs and inputs based on compositor seat\n"
 		"  --fullscreen\t\tRun in fullscreen mode\n"
 		"  --use-pixman\t\tUse the pixman (CPU) renderer\n"
 		"  --output-count=COUNT\tCreate multiple outputs\n"
@@ -4148,7 +4155,7 @@ int main(int argc, char *argv[])
 	char *option_shell = NULL;
 	char *modules, *option_modules = NULL;
 	char *log = NULL;
-	char *server_socket = NULL, *end;
+	char *server_socket = NULL;
 	int32_t idle_time = 300;
 	int32_t help = 0;
 	char *socket_name = "wayland-0";
@@ -4285,8 +4292,7 @@ int main(int argc, char *argv[])
 	server_socket = getenv("WAYLAND_SERVER_SOCKET");
 	if (server_socket) {
 		weston_log("Running with single client\n");
-		fd = strtol(server_socket, &end, 0);
-		if (*end != '\0')
+		if (!weston_strtoi(server_socket, NULL, 0, &fd))
 			fd = -1;
 	} else {
 		fd = -1;

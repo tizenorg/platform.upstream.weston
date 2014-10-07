@@ -1,6 +1,7 @@
 /*
- * Copyright © 2013 Intel Corporation
- * Copyright © 2013 Jonas Ådahl
+ * Copyright © 2014 Intel Corporation.
+ *
+ * Contact: Imran Zaman <imran.zaman@linux.intel.com>
  *
  * Permission to use, copy, modify, distribute, and sell this software and
  * its documentation for any purpose is hereby granted without fee, provided
@@ -21,42 +22,22 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef _LIBINPUT_SEAT_H_
-#define _LIBINPUT_SEAT_H_
+#ifndef WESTON_STR_UTIL_H
+#define WESTON_STR_UTIL_H
 
-#include "config.h"
+#include <stdbool.h>
 
-#include <libudev.h>
-
-#include "compositor.h"
-
-struct udev_seat {
-	struct weston_seat base;
-	struct wl_list devices_list;
-	struct wl_listener output_create_listener;
-};
-
-struct udev_input {
-	struct libinput *libinput;
-	struct wl_event_source *libinput_source;
-	struct weston_compositor *compositor;
-	int suspended;
-};
-
-int
-udev_input_enable(struct udev_input *input);
-void
-udev_input_disable(struct udev_input *input);
-int
-udev_input_init(struct udev_input *input,
-		struct weston_compositor *c,
-		struct udev *udev,
-		const char *seat_id);
-void
-udev_input_destroy(struct udev_input *input);
-
-struct udev_seat *
-udev_seat_get_named(struct weston_compositor *c,
-		    const char *seat_name);
-
+#ifdef  __cplusplus
+extern "C" {
 #endif
+
+bool weston_strtoi(const char *str, char **endptr, int base, int *val);
+bool weston_strtol(const char *str, char **endptr, int base, long *val);
+bool weston_strtoui(const char *str, char **endptr, int base, unsigned int *val);
+bool weston_strtoul(const char *str, char **endptr, int base, unsigned long *val);
+
+#ifdef  __cplusplus
+}
+#endif
+
+#endif /* WESTON_STR_UTIL_H */
