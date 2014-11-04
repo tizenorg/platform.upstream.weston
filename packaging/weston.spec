@@ -1,3 +1,4 @@
+%define _with_wayland 1
 %bcond_with wayland
 %bcond_with mobile
 %bcond_with rdp
@@ -36,11 +37,9 @@ BuildRequires:  pam-devel
 BuildRequires:  pkgconfig
 BuildRequires:  xz
 BuildRequires:  pkgconfig(cairo)
-BuildRequires:  pkgconfig(cairo-egl) >= 1.11.3
+#BuildRequires:  pkgconfig(cairo-egl) >= 1.11.3
 BuildRequires:  pkgconfig(egl) >= 7.10
-%if %{with rdp}
-BuildRequires:  pkgconfig(freerdp)
-%endif
+
 BuildRequires:  pkgconfig(gbm)
 BuildRequires:  pkgconfig(gio-2.0)
 BuildRequires:  pkgconfig(glesv2)
@@ -56,14 +55,11 @@ BuildRequires:  pkgconfig(pixman-1)
 BuildRequires:  pkgconfig(poppler-glib)
 BuildRequires:  pkgconfig(wayland-client)
 BuildRequires:  pkgconfig(wayland-egl)
+#BuildRequires:  pkgconfig(wayland-drm)
 BuildRequires:  pkgconfig(wayland-server)
 BuildRequires:  pkgconfig(xkbcommon) >= 0.3.0
 Requires:       weston-startup
 Requires(pre):  /usr/sbin/groupadd
-
-%if !%{with wayland}
-ExclusiveArch:
-%endif
 
 %description
 Weston is the reference implementation of a Wayland compositor, and a
@@ -115,6 +111,11 @@ cp %{SOURCE1001} .
          --disable-xwayland-test \
          --disable-x11-compositor \
          --disable-rpi-compositor \
+	--enable-demo-clients \
+	--enable-egl \
+	--enable-drm-compositor \
+	--enable-wayland-compositor \
+	--enable-fbdev-compositor \
          %{?extra_config_options1:%extra_config_options1} \
          %{?extra_config_options2:%extra_config_options2} \
          %{?extra_config_options3:%extra_config_options3}
