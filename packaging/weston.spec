@@ -115,6 +115,7 @@ cp %{SOURCE1001} .
          --disable-xwayland-test \
          --disable-x11-compositor \
          --disable-rpi-compositor \
+         --with-cairo=glesv2 \
          %{?extra_config_options1:%extra_config_options1} \
          %{?extra_config_options2:%extra_config_options2} \
          %{?extra_config_options3:%extra_config_options3}
@@ -129,6 +130,8 @@ install -m 755 weston-calibrator %{buildroot}%{_bindir}
 install -m 755 weston-simple-touch %{buildroot}%{_bindir}
 install -m 755 weston-simple-shm %{buildroot}%{_bindir}
 install -m 755 weston-simple-egl %{buildroot}%{_bindir}
+install -m 755 weston-nested-client %{buildroot}%{_bindir}
+install -m 755 weston-nested %{buildroot}%{_bindir}
 install -m 755 weston-flower %{buildroot}%{_bindir}
 install -m 755 weston-image %{buildroot}%{_bindir}
 install -m 755 weston-cliptest %{buildroot}%{_bindir}
@@ -189,6 +192,8 @@ getent group weston-launch >/dev/null || %{_sbindir}/groupadd -o -r weston-launc
 %{_bindir}/weston-simple-touch
 %{_bindir}/weston-simple-shm
 %{_bindir}/weston-simple-egl
+%{_bindir}/weston-nested-client
+%{_bindir}/weston-nested
 %{_bindir}/weston-flower
 %{_bindir}/weston-image
 %{_bindir}/weston-cliptest
