@@ -65,6 +65,8 @@
 #include "compositor.h"
 #include "pixman-renderer.h"
 
+#include "../shared/str-util.h"
+
 #define MAX_FREERDP_FDS 32
 #define DEFAULT_AXIS_STEP_DISTANCE wl_fixed_from_int(10)
 #define RDP_MODE_FREQ 60 * 1000
@@ -1214,7 +1216,8 @@ rdp_compositor_create(struct wl_display *display,
 			goto err_output;
 		}
 
-		fd = strtoul(fd_str, NULL, 10);
+		if (!weston_strtoi(fd_str, NULL, 10, &fd))
+			fd = -1;
 		if (rdp_peer_init(freerdp_peer_new(fd), c))
 			goto err_output;
 	}
