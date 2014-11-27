@@ -119,7 +119,6 @@ struct drm_compositor {
 	uint32_t prev_state;
 
 	clockid_t clock;
-	struct udev_input input;
 	char *main_seat;
 
 	uint32_t cursor_width;
