@@ -1,4 +1,5 @@
 %bcond_with wayland
+%bcond_with libva
 %bcond_with mobile
 %bcond_with rdp
 
@@ -56,6 +57,9 @@ BuildRequires:  pkgconfig(libffi)
 BuildRequires:  pkgconfig(libinput) >= 0.6.0
 BuildRequires:  pkgconfig(libsystemd-login)
 BuildRequires:  pkgconfig(libudev) >= 136
+%if %{with libva}
+BuildRequires:  pkgconfig(libva)
+%endif
 BuildRequires:  pkgconfig(mtdev) >= 1.1.0
 BuildRequires:  pkgconfig(pangocairo)
 BuildRequires:  pkgconfig(pixman-1)
