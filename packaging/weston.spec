@@ -14,9 +14,6 @@
 %define extra_config_options3 --enable-sys-uid
 %endif
 
-%if "%{profile}" == "ivi"
-%define extra_config_options4 --enable-multiseat
-%endif
 
 Name:           weston
 Version:        1.6.0
