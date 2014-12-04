@@ -14,10 +14,6 @@
 %define extra_config_options3 --enable-sys-uid
 %endif
 
-%if "%{profile}" == "ivi"
-%define extra_config_options4 --enable-multiseat
-%endif
-
 Name:           weston
 Version:        1.6.0
 Release:        0
@@ -29,6 +25,7 @@ Url:            http://weston.freedesktop.org/
 #Git-Clone:	git://anongit.freedesktop.org/wayland/weston
 #Git-Web:	http://cgit.freedesktop.org/wayland/weston/
 Source0:        %name-%version.tar.xz
+Source1:        %name.target
 Source1001:     %name.manifest
 BuildRequires:	autoconf >= 2.64, automake >= 1.11
 BuildRequires:  expat-devel
@@ -155,7 +152,8 @@ install -m 755 weston-subsurfaces %{buildroot}%{_bindir}
 install -m 755 weston-transformed %{buildroot}%{_bindir}
 install -m 755 weston-fullscreen %{buildroot}%{_bindir}
 
-
+install -d %{buildroot}%{_unitdir_user}
+install -m 644 %{SOURCE1} %{buildroot}%{_unitdir_user}/weston.target
 # The weston.service unit file must be provided by the weston-startup
 # virtual package, i.e. "Provide: weston-startup".  The weston-startup
 # virtual package requirement is intended to force Tizen profile
@@ -190,6 +188,7 @@ getent group weston-launch >/dev/null || %{_sbindir}/groupadd -o -r weston-launc
 %{_libdir}/weston/wayland-backend.so
 %{_libdir}/weston/gl-renderer.so
 %{_datadir}/weston
+%{_unitdir_user}/weston.target
 
 %files devel
 %manifest %{name}.manifest
