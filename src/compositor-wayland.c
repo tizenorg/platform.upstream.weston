@@ -1609,6 +1609,53 @@ static const struct wl_keyboard_listener keyboard_listener = {
 };
 
 static void
+input_handle_touch_down(void *data, struct wl_touch *wl_touch,
+		       uint32_t serial, uint32_t time,
+		       struct wl_surface *surface, int32_t id, wl_fixed_t x_w,
+		       wl_fixed_t y_w)
+{
+	struct wayland_input *input = data;
+	notify_touch(&input->base, time, id, x_w, y_w, WL_TOUCH_DOWN);
+}
+
+static void
+input_handle_touch_up(void *data, struct wl_touch *wl_touch,
+		uint32_t serial, uint32_t time, int32_t id)
+{
+	struct wayland_input *input = data;
+	notify_touch(&input->base, time, id, 0, 0, WL_TOUCH_UP);
+}
+
+static void
+input_handle_touch_motion(void *data, struct wl_touch *wl_touch,
+			 uint32_t time, int32_t id, wl_fixed_t x_w,
+			 wl_fixed_t y_w)
+{
+	struct wayland_input *input = data;
+	notify_touch(&input->base, time, id, x_w, y_w, WL_TOUCH_MOTION);
+}
+
+static void
+input_handle_touch_frame(void *data, struct wl_touch *wl_touch)
+{
+	struct wayland_input *input = data;
+	notify_touch_frame(&input->base);
+}
+
+static void
+input_handle_touch_cancel(void *data, struct wl_touch *wl_touch)
+{
+}
+
+static const struct wl_touch_listener touch_listener = {
+		input_handle_touch_down,
+		input_handle_touch_up,
+		input_handle_touch_motion,
+		input_handle_touch_frame,
+		input_handle_touch_cancel,
+};
+
+static void
 input_capabilities_updated(struct wayland_input *input)
 {
 	if ((input->caps & WL_SEAT_CAPABILITY_POINTER) &&
@@ -1636,6 +1683,21 @@ input_capabilities_updated(struct wayland_input *input)
 		wl_keyboard_destroy(input->parent.keyboard);
 		input->parent.keyboard = NULL;
 	}
+
+	if ((input->caps & WL_SEAT_CAPABILITY_TOUCH) &&
+			!input->parent.touch) {
+		input->parent.touch = wl_seat_get_touch(input->parent.seat);
+		weston_seat_init_touch (&input->base);
+		wl_touch_set_user_data(input->parent.touch, input);
+		wl_touch_add_listener(input->parent.touch,
+				&touch_listener, input);
+	} else if (!(input->caps & WL_SEAT_CAPABILITY_TOUCH) &&
+			input->parent.touch) {
+		weston_seat_release_touch (&input->base);
+		wl_touch_destroy(input->parent.touch);
+		input->parent.touch = NULL;
+	}
+
 	input->caps_update_required = 0;
 }
 
