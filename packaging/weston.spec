@@ -64,7 +64,7 @@ BuildRequires:  pkgconfig(wayland-client)
 BuildRequires:  pkgconfig(wayland-egl)
 BuildRequires:  pkgconfig(wayland-server)
 BuildRequires:  pkgconfig(xkbcommon) >= 0.3.0
-Requires:       weston-startup
+Requires:       tlm
 Requires(pre):  /usr/sbin/groupadd
 
 %if !%{with wayland}
@@ -154,15 +154,6 @@ install -m 755 weston-clickdot %{buildroot}%{_bindir}
 install -m 755 weston-subsurfaces %{buildroot}%{_bindir}
 install -m 755 weston-transformed %{buildroot}%{_bindir}
 install -m 755 weston-fullscreen %{buildroot}%{_bindir}
-
-# The weston.service unit file must be provided by the weston-startup
-# virtual package, i.e. "Provide: weston-startup".  The weston-startup
-# virtual package requirement is intended to force Tizen profile
-# maintainers to add the necessary start-up script or systemd unit
-# file to start weston. Otherwise it becomes possible to install
-# weston without an automated means to start weston at boot, which may
-# lead to confusion.  This approach allows startup related files to be
-# maintained outside of this weston package.
 
 %pre
 getent group weston-launch >/dev/null || %{_sbindir}/groupadd -o -r weston-launch
