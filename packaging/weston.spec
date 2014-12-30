@@ -23,6 +23,10 @@
 %define extra_config_options5 --enable-sys-uid --disable-ivi-shell
 %endif
 
+%if "%{profile}" == "ivi"
+%define extra_config_options4 --disable-default-vkb
+%endif
+
 Name:           weston
 Version:        1.7.0
 Release:        0

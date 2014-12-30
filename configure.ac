@@ -83,6 +83,15 @@ if test x$enable_xkbcommon = xyes; then
 	COMPOSITOR_MODULES="$COMPOSITOR_MODULES xkbcommon >= 0.3.0"
 fi
 
+AC_ARG_ENABLE([default-vkb],
+              [AC_HELP_STRING([--enable-default-vkb],
+                              [Enable default virtual keyboard])],
+              [],
+              [enable_default_vkb=yes])
+if test "x$enable_default_vkb" = "xyes"; then
+  AC_DEFINE(HAVE_DEFAULT_VKB, [1], [Enable default virtual keyboard])
+fi
+
 AC_ARG_ENABLE(sys-uid, [  --enable-sys-uid],,
               enable_sys_uid=no)
 if test x$enable_sys_uid = xyes; then
