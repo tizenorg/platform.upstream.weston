@@ -969,15 +969,18 @@ static void
 text_backend_configuration(struct text_backend *text_backend)
 {
 	struct weston_config_section *section;
-	char *client;
-	int ret;
+	char *client = NULL;
+	int ret = -1;
 
 	section = weston_config_get_section(text_backend->compositor->config,
 					    "input-method", NULL, NULL);
+#if HAVE_DEFAULT_VKB
 	ret = asprintf(&client, "%s/weston-keyboard",
 		       weston_config_get_libexec_dir());
+#endif
 	if (ret < 0)
 		client = NULL;
+
 	weston_config_section_get_string(section, "path",
 					 &text_backend->input_method.path,
 					 client);
