@@ -428,13 +428,13 @@ theme_render_frame(struct theme *t,
 
 	if (flags & THEME_FRAME_MAXIMIZED)
 		margin = 0;
-	else {
-		cairo_set_source_rgba(cr, 0, 0, 0, 0.45);
-		tile_mask(cr, t->shadow,
-			  2, 2, width + 8, height + 8,
-			  64, 64);
+	else
 		margin = t->margin;
-	}
+
+	cairo_set_source_rgba(cr, 0, 0, 0, 0.45);
+	tile_mask(cr, t->shadow,
+		  2, 2, width + 8, height + 8,
+		  64, 64);
 
 	if (flags & THEME_FRAME_ACTIVE)
 		source = t->active_frame;
