@@ -1284,8 +1284,12 @@ create_cursors(struct display *display)
 	char *theme = NULL;
 	unsigned int i, j;
 	struct wl_cursor *cursor;
+	const char *conf_file = NULL;
 
-	config = weston_config_parse("weston.ini");
+	conf_file = getenv("WESTON_CONFIG");
+	if (conf_file == NULL)
+		conf_file = "weston.ini";
+	config = weston_config_parse(conf_file);
 	s = weston_config_get_section(config, "shell", NULL, NULL);
 	weston_config_section_get_string(s, "cursor-theme", &theme, NULL);
 	weston_config_section_get_int(s, "cursor-size", &size, 32);
