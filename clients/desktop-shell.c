@@ -1328,11 +1328,15 @@ int main(int argc, char *argv[])
 	struct desktop desktop = { 0 };
 	struct output *output;
 	struct weston_config_section *s;
+	const char *conf_file = NULL;
 
 	desktop.unlock_task.run = unlock_dialog_finish;
 	wl_list_init(&desktop.outputs);
 
-	desktop.config = weston_config_parse("weston.ini");
+	conf_file = getenv("WESTON_CONFIG");
+	if (conf_file == NULL)
+		conf_file = "weston.ini";
+	desktop.config = weston_config_parse(conf_file);
 	s = weston_config_get_section(desktop.config, "shell", NULL, NULL);
 	weston_config_section_get_bool(s, "locking", &desktop.locking, 1);
 
