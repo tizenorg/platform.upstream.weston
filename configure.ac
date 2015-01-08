@@ -103,6 +103,15 @@ if test "x$enable_default_vkb" = "xyes"; then
   AC_DEFINE(HAVE_DEFAULT_VKB, [1], [Enable default virtual keyboard])
 fi
 
+AC_ARG_ENABLE([transform],
+              [AC_HELP_STRING([--enable-transform],
+                              [Enable transformation for nested westons])],
+              [],
+              [enable_transform=no])
+if test "x$enable_transform" = "xyes"; then
+  AC_DEFINE(HAVE_TRANSFORM, [1], [Enable transformation for nested westons])
+fi
+
 AC_ARG_ENABLE(sys-uid, [  --enable-sys-uid],,
               enable_sys_uid=no)
 if test x$enable_sys_uid = xyes; then

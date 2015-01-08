@@ -1178,6 +1178,7 @@ static struct drm_mode *
 choose_mode (struct drm_output *output, struct weston_mode *target_mode)
 {
 	struct drm_mode *tmp_mode = NULL, *mode;
+	int32_t w, h;
 
 	if (output->base.current_mode->width == target_mode->width &&
 	    output->base.current_mode->height == target_mode->height &&
@@ -1186,13 +1187,29 @@ choose_mode (struct drm_output *output, struct weston_mode *target_mode)
 		return (struct drm_mode *)output->base.current_mode;
 
 	wl_list_for_each(mode, &output->base.mode_list, base.link) {
-		if (mode->mode_info.hdisplay == target_mode->width &&
-		    mode->mode_info.vdisplay == target_mode->height) {
+		switch (output->base.transform) {
+		case WL_OUTPUT_TRANSFORM_90:
+		case WL_OUTPUT_TRANSFORM_270:
+		case WL_OUTPUT_TRANSFORM_FLIPPED_90:
+		case WL_OUTPUT_TRANSFORM_FLIPPED_270:
+#if HAVE_TRANSFORM
+			w = mode->mode_info.vdisplay;
+			h = mode->mode_info.hdisplay;
+			break;
+#endif
+		default:
+			w = mode->mode_info.hdisplay;
+			h = mode->mode_info.vdisplay;
+			break;
+		}
+		if (w == target_mode->width &&
+		    h == target_mode->height) {
 			if (mode->mode_info.vrefresh == target_mode->refresh || 
           		    target_mode->refresh == 0) {
 				return mode;
-			} else if (!tmp_mode) 
+			} else if (!tmp_mode) {
 				tmp_mode = mode;
+			}
 		}
 	}
 

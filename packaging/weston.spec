@@ -16,7 +16,7 @@
 %endif
 
 %if "%{profile}" == "ivi"
-%define extra_config_options4 --disable-default-vkb
+%define extra_config_options4 --disable-default-vkb --enable-transform
 %endif
 
 Name:           weston
