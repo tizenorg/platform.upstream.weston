@@ -1155,9 +1155,8 @@ wayland_output_create_for_parent_output(struct wayland_compositor *c,
 		x = 0;
 	}
 
-	output = wayland_output_create(c, x, 0, mode->width, mode->height,
-				       NULL, 0,
-				       WL_OUTPUT_TRANSFORM_NORMAL, 1);
+	output = wayland_output_create(c, x, 0, mode->width, mode->height, NULL,
+				       0, WL_OUTPUT_TRANSFORM_NORMAL, 1);
 	if (!output)
 		return NULL;
 
@@ -1666,7 +1665,8 @@ wayland_parent_output_geometry(void *data, struct wl_output *output_proxy,
 }
 
 static struct weston_mode *
-find_mode(struct wl_list *list, int32_t width, int32_t height, uint32_t refresh)
+find_mode(struct wl_list *list, int32_t width, int32_t height, uint32_t refresh,
+	  int32_t transform)
 {
 	struct weston_mode *mode;
 
@@ -1680,8 +1680,21 @@ find_mode(struct wl_list *list, int32_t width, int32_t height, uint32_t refresh)
 	if (!mode)
 		return NULL;
 
-	mode->width = width;
-	mode->height = height;
+	switch (transform) {
+	case WL_OUTPUT_TRANSFORM_90:
+	case WL_OUTPUT_TRANSFORM_270:
+	case WL_OUTPUT_TRANSFORM_FLIPPED_90:
+	case WL_OUTPUT_TRANSFORM_FLIPPED_270:
+#if HAVE_TRANSFORM
+		mode->width = height;
+		mode->height = width;
+		break;
+#endif
+	default:
+		mode->width = width;
+		mode->height = height;
+		break;
+	}
 	mode->refresh = refresh;
 	wl_list_insert(list, &mode->link);
 
@@ -1698,13 +1711,15 @@ wayland_parent_output_mode(void *data, struct wl_output *wl_output_proxy,
 
 	if (output->output) {
 		mode = find_mode(&output->output->base.mode_list,
-				 width, height, refresh);
+				 width, height, refresh, output->transform);
 		if (!mode)
 			return;
 		mode->flags = flags;
+
 		/* Do a mode-switch on current mode change? */
 	} else {
-		mode = find_mode(&output->mode_list, width, height, refresh);
+		mode = find_mode(&output->mode_list, width, height, refresh,
+				 output->transform);
 		if (!mode)
 			return;
 		mode->flags = flags;
