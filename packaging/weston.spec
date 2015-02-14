@@ -12,11 +12,11 @@
 %endif
 
 %if "%{profile}" == "common"
-%define extra_config_options3 --enable-sys-uid
+%define extra_config_options3 --enable-sys-uid --disable-ivi-shell
 %endif
 
 Name:           weston
-Version:        1.6.0
+Version:        1.7.0
 Release:        0
 Summary:        Wayland Compositor Infrastructure
 License:        MIT
@@ -26,7 +26,7 @@ Url:            http://weston.freedesktop.org/
 #Git-Clone:	git://anongit.freedesktop.org/wayland/weston
 #Git-Web:	http://cgit.freedesktop.org/wayland/weston/
 Source0:        %name-%version.tar.xz
-Source1:        %name.target
+Source1:        %name.ini
 Source1001: 	%name.manifest
 BuildRequires:	autoconf >= 2.64, automake >= 1.11
 BuildRequires:  expat-devel
@@ -51,7 +51,7 @@ BuildRequires:  pkgconfig(gobject-2.0)
 BuildRequires:  pkgconfig(libdrm) >= 2.4.30
 %endif
 BuildRequires:  pkgconfig(libffi)
-BuildRequires:  pkgconfig(libinput) >= 0.6.0
+BuildRequires:  pkgconfig(libinput) >= 0.8.0
 BuildRequires:  pkgconfig(libsystemd-login)
 BuildRequires:  pkgconfig(libudev) >= 136
 %if %{with libva}
@@ -108,6 +108,22 @@ This package provides a RDP compositor allowing to do remote rendering
 through the network.
 %endif
 
+%if "%{profile}" == "ivi"
+%package ivi-shell
+Summary: %{name} IVI Shell
+Group:   Graphics & UI Framework/Wayland Window System
+%description ivi-shell
+A reference Weston shell designed for use in IVI systems.
+
+%package ivi-shell-config
+Summary: Tizen IVI %{name} configuration
+Group:   Automotive/Configuration
+Conflicts: weston-ivi-config
+Conflicts: ico-uxf-weston-plugin
+%description ivi-shell-config
+This package contains Tizen IVI-specific configuration.
+%endif
+
 %prep
 %setup -q
 cp %{SOURCE1001} .
@@ -138,8 +154,10 @@ install -m 755 weston-simple-touch %{buildroot}%{_bindir}
 install -m 755 weston-simple-shm %{buildroot}%{_bindir}
 install -m 755 weston-simple-egl %{buildroot}%{_bindir}
 install -m 755 weston-simple-damage %{buildroot}%{_bindir}
+install -m 755 weston-presentation-shm %{buildroot}%{_bindir}
 install -m 755 weston-nested-client %{buildroot}%{_bindir}
 install -m 755 weston-nested %{buildroot}%{_bindir}
+install -m 755 weston-multi-resource %{buildroot}%{_bindir}
 install -m 755 weston-flower %{buildroot}%{_bindir}
 install -m 755 weston-image %{buildroot}%{_bindir}
 install -m 755 weston-cliptest %{buildroot}%{_bindir}
@@ -155,9 +173,11 @@ install -m 755 weston-subsurfaces %{buildroot}%{_bindir}
 install -m 755 weston-transformed %{buildroot}%{_bindir}
 install -m 755 weston-fullscreen %{buildroot}%{_bindir}
 
+%if "%{profile}" == "ivi"
+mkdir -p %{buildroot}%{_sysconfdir}/xdg
+install -m 644 %{SOURCE1} %{buildroot}%{_sysconfdir}/xdg
+%endif
 
-install -d %{buildroot}%{_unitdir_user}
-install -m 644 %{SOURCE1} %{buildroot}%{_unitdir_user}/weston.target
 # The weston.service unit file must be provided by the weston-startup
 # virtual package, i.e. "Provide: weston-startup".  The weston-startup
 # virtual package requirement is intended to force Tizen profile
@@ -166,6 +186,8 @@ install -m 644 %{SOURCE1} %{buildroot}%{_unitdir_user}/weston.target
 # weston without an automated means to start weston at boot, which may
 # lead to confusion.  This approach allows startup related files to be
 # maintained outside of this weston package.
+
+rm -rf %{buildroot}%{_datadir}/wayland-sessions
 
 %pre
 getent group weston-launch >/dev/null || %{_sbindir}/groupadd -o -r weston-launch
@@ -192,7 +214,20 @@ getent group weston-launch >/dev/null || %{_sbindir}/groupadd -o -r weston-launc
 %{_libdir}/weston/wayland-backend.so
 %{_libdir}/weston/gl-renderer.so
 %{_datadir}/weston
-%{_unitdir_user}/weston.target
+# exclude ivi-shell-specific files
+%exclude %{_libexecdir}/weston-ivi-shell-user-interface
+%exclude %{_datadir}/weston/background.png
+%exclude %{_datadir}/weston/panel.png
+%exclude %{_datadir}/weston/tiling.png
+%exclude %{_datadir}/weston/sidebyside.png
+%exclude %{_datadir}/weston/fullscreen.png
+%exclude %{_datadir}/weston/random.png
+%exclude %{_datadir}/weston/home.png
+%exclude %{_datadir}/weston/icon_ivi_simple-egl.png
+%exclude %{_datadir}/weston/icon_ivi_simple-shm.png
+%exclude %{_datadir}/weston/icon_ivi_smoke.png
+%exclude %{_datadir}/weston/icon_ivi_flower.png
+%exclude %{_datadir}/weston/icon_ivi_clickdot.png
 
 %files devel
 %manifest %{name}.manifest
@@ -205,8 +240,10 @@ getent group weston-launch >/dev/null || %{_sbindir}/groupadd -o -r weston-launc
 %{_bindir}/weston-simple-shm
 %{_bindir}/weston-simple-egl
 %{_bindir}/weston-simple-damage
+%{_bindir}/weston-presentation-shm
 %{_bindir}/weston-nested-client
 %{_bindir}/weston-nested
+%{_bindir}/weston-multi-resource
 %{_bindir}/weston-flower
 %{_bindir}/weston-image
 %{_bindir}/weston-cliptest
@@ -228,6 +265,30 @@ getent group weston-launch >/dev/null || %{_sbindir}/groupadd -o -r weston-launc
 %manifest %{name}.manifest
 %{_libdir}/weston/rdp-backend.so
 %{_libdir}/weston/screen-share.so
+%endif
+
+%if "%{profile}" == "ivi"
+%files ivi-shell
+%manifest %{name}.manifest
+%{_libdir}/weston/hmi-controller.so
+%{_libdir}/weston/ivi-shell.so
+%{_libexecdir}/weston-ivi-shell-user-interface
+%{_datadir}/weston/background.png
+%{_datadir}/weston/panel.png
+%{_datadir}/weston/tiling.png
+%{_datadir}/weston/sidebyside.png
+%{_datadir}/weston/fullscreen.png
+%{_datadir}/weston/random.png
+%{_datadir}/weston/home.png
+%{_datadir}/weston/icon_ivi_simple-egl.png
+%{_datadir}/weston/icon_ivi_simple-shm.png
+%{_datadir}/weston/icon_ivi_smoke.png
+%{_datadir}/weston/icon_ivi_flower.png
+%{_datadir}/weston/icon_ivi_clickdot.png
+
+%files ivi-shell-config
+%manifest %{name}.manifest
+%config  %{_sysconfdir}/xdg/weston.ini
 %endif
 
 %changelog
