@@ -1946,6 +1946,7 @@ create_output_for_connector(struct drm_compositor *ec,
 	const char *type_name;
 	enum output_config config;
 	uint32_t transform;
+	int default_output;
 
 	i = find_crtc_for_connector(ec, resources, connector);
 	if (i < 0) {
@@ -1997,6 +1998,8 @@ create_output_for_connector(struct drm_compositor *ec,
 			   s, output->base.name);
 
 	free(s);
+	weston_config_section_get_int(section, "default_output",
+				      &default_output, 0);
 
 	if (get_gbm_format_from_section(section,
 					ec->format,
@@ -2119,6 +2122,8 @@ create_output_for_connector(struct drm_compositor *ec,
 	}
 
 	wl_list_insert(ec->base.output_list.prev, &output->base.link);
+	if (default_output)
+		ec->base.default_output = &output->base;
 
 	find_and_parse_output_edid(ec, output, connector);
 	if (connector->connector_type == DRM_MODE_CONNECTOR_LVDS)
