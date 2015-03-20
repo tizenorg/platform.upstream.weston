@@ -19,6 +19,14 @@
 %define extra_config_options4 --disable-default-vkb --enable-transform
 %endif
 
+%if "%{profile}" == "tv"
+%define extra_config_options5 --enable-sys-uid
+%endif
+
+%if "%{profile}" == "mobile"
+%define extra_config_options6 --enable-sys-uid
+%endif
+
 Name:           weston
 Version:        1.6.0
 Release:        0
@@ -129,7 +137,9 @@ cp %{SOURCE1001} .
          %{?extra_config_options1:%extra_config_options1} \
          %{?extra_config_options2:%extra_config_options2} \
          %{?extra_config_options3:%extra_config_options3} \
-         %{?extra_config_options4:%extra_config_options4}
+         %{?extra_config_options4:%extra_config_options4} \
+         %{?extra_config_options5:%extra_config_options5} \
+         %{?extra_config_options6:%extra_config_options6}
 
 make %{?_smp_mflags}
 
