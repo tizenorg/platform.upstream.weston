@@ -15,6 +15,14 @@
 %define extra_config_options3 --enable-sys-uid --disable-ivi-shell
 %endif
 
+%if "%{profile}" == "tv"
+%define extra_config_options4 --enable-sys-uid --disable-ivi-shell
+%endif
+
+%if "%{profile}" == "mobile"
+%define extra_config_options5 --enable-sys-uid --disable-ivi-shell
+%endif
+
 Name:           weston
 Version:        1.7.0
 Release:        0
@@ -141,7 +149,9 @@ cp %{SOURCE1001} .
          --with-cairo=glesv2 \
          %{?extra_config_options1:%extra_config_options1} \
          %{?extra_config_options2:%extra_config_options2} \
-         %{?extra_config_options3:%extra_config_options3}
+         %{?extra_config_options3:%extra_config_options3} \
+         %{?extra_config_options4:%extra_config_options4} \
+         %{?extra_config_options5:%extra_config_options5}
 
 make %{?_smp_mflags}
 
