@@ -48,7 +48,7 @@ struct weston_test {
 	static void func(void *);				\
 								\
 	const struct weston_test test##name			\
-		__attribute__ ((section ("test_section"))) =	\
+		__attribute__ ((section ("test_section"), used)) =	\
 	{							\
 		#name, func, data, size, n_elem, ret		\
 	};
