@@ -52,7 +52,8 @@ convert_strtol(const char *str, char **endptr, int base, long *val)
 
        errno = 0;
        v = strtol(str, endptr, base);
-       if (errno != 0 || *endptr == str || **endptr != '\0')
+       if (errno != 0 || *endptr == str ||
+           (**endptr != '\0' && **endptr != '\n' && **endptr != '\r'))
                return false;
 
        errno = prev_errno;
@@ -87,7 +88,8 @@ convert_strtoul (const char *str, char **endptr, int base, unsigned long *val)
 
        errno = 0;
        v = strtoul(str, endptr, base);
-       if (errno != 0 || *endptr == str || **endptr != '\0')
+       if (errno != 0 || *endptr == str ||
+           (**endptr != '\0' && **endptr != '\n' && **endptr != '\r'))
 	       return false;
 
        errno = prev_errno;
