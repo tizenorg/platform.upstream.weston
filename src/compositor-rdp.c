@@ -1108,7 +1108,10 @@ rdp_peer_init(freerdp_peer *client, struct rdp_compositor *c)
 	settings->RemoteFxCodec = TRUE;
 	settings->NSCodec = TRUE;
 	settings->FrameMarkerCommandEnabled = TRUE;
+#if 0
+	/* this field is defined in freerdp master branch */
 	settings->SurfaceFrameMarkerEnabled = TRUE;
+#endif
 
 	client->Capabilities = xf_peer_capabilities;
 	client->PostConnect = xf_peer_post_connect;
