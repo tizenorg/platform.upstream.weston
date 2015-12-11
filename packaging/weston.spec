@@ -1,6 +1,7 @@
 %bcond_with wayland
 %bcond_with libva
 %bcond_with mobile
+%bcond_with wearable
 %bcond_with rdp
 
 %if %{with mobile}
@@ -20,6 +21,10 @@
 %endif
 
 %if "%{profile}" == "mobile"
+%define extra_config_options5 --enable-sys-uid --disable-ivi-shell
+%endif
+
+%if "%{profile}" == "wearable"
 %define extra_config_options5 --enable-sys-uid --disable-ivi-shell
 %endif
 
